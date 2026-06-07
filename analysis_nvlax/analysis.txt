@@ -1,0 +1,258 @@
+================================================================================
+  SLE -> HSLE MODEL TRANSITION ANALYSIS
+  Generated: 2026-06-02
+================================================================================
+
+  SLE  model : sle_emu-nvlax-a0-26ww12a_co
+  HSLE model : sle_emu-nvlax-a0-26ww12a_hsle_v07_cores__msr_co
+  Base path  : /nfs/site/disks/ive_nvl_efs_pgesyuk_001/hybridization/src_models/
+
+  Total differences: 104 entries (39 added, 65 modified)
+  All file paths are relative to the model root folder.
+
+================================================================================
+  1. EMULATION BUILD INFRASTRUCTURE
+================================================================================
+
+Status    | File                                              | Change Summary
+----------|---------------------------------------------------|--------------------------------------------------
+Modified  | tool.cth                                          | Top-level CTH tool config updated
+Modified  | verif/emu/tool.cth                                | EMU-level CTH tool config updated
+Modified  | flows/pydoh/tool.cth                              | PyDOH flow tool config updated
+Modified  | flows/tlspylib/tool.cth                           | TLSpylib flow tool config updated
+Modified  | verif/emu/Makefile.env                            | I3C xtor disabled for HSLE; LD_LIBRARY_PATH
+          |                                                   | extended with /lib64 and simics_workspace/;
+          |                                                   | SIMICS_PROJECT exported
+Modified  | verif/emu/zebu/Makefile                           | Added SEM ZSE_PATH resolution via cth_query
+          |                                                   | for TECH=sem builds
+Modified  | verif/emu/zebu/Makefile.cfg                       | Full Simics 7 package list populated (25+
+          |                                                   | packages); CTH_PYTHONPATH, SIMICS_HOME,
+          |                                                   | SIMICS_WORKSPACE and related paths configured
+Modified  | verif/emu/transactors.json                        | MAJOR: Switched from emu_engine (custom patched
+          |                                                   | paths) to vcs_engine; removed zse_engine,
+          |                                                   | zse_tracker, emu_tracer_component, jem,
+          |                                                   | gpio_xactor overrides; IOSF-SB xtor switched
+          |                                                   | to repo path; spark_tools path updated
+Added     | verif/emu/transactors.json.bkp                    | Backup of SLE transactors.json (artifact)
+Modified  | verif/emu/rtl_cfg/PKG_IP_CHANGES.cfg              | Added hybrid MUX xtor .sv/.vh files to C-die
+          |                                                   | and Hub RTL replacement lists
+Modified  | cfg/trex/emulation_TREX.pm                        | zebu_libstdc_override plugin load commented out
+Added     | verif/emu/rtl_cfg/.HUB_IP_CHANGES.cfg.kate-swp    | Editor temp file (artifact)
+Added     | verif/emu/rtl_cfg/.PCD_TARGET_SETUP.cfg.kate-swp  | Editor temp file (artifact)
+
+================================================================================
+  2. REGISTER LISTS / RUN CONFIGURATIONS (reglist/)
+================================================================================
+
+Status    | File                                                              | Change Summary
+----------|-------------------------------------------------------------------|-----------------------------------------
+Modified  | reglist/common/emu/common_defaults.list                          | Added HVM_RESET_TEST=0 and HVM_RESET=0
+Modified  | reglist/common/emu/common_defaults_zse.list                      | Updated ZSE-specific defaults
+Added     | reglist/common/emu/common_hsle.list                              | NEW: Global HSLE defaults - SPI xtor load,
+          |                                                                   | hybrid config path, multi-core enable,
+          |                                                                   | PM log level
+Added     | reglist/common/emu/common_hsle.null.list                         | NEW: Null/stub variant of HSLE defaults
+Modified  | reglist/nvlax/emu/doa_pkg_chp_p2e4_model_zse5.list              | DOA run list updated for nvlax
+Modified  | reglist/nvlsi7_n2p/emu/doa_pkg_chp_model_p2e4_fast_zse5.list    | DOA fast run list updated for nvlsi7_n2p
+Added     | reglist/nvlsi7_n2p/emu/efficiency_defaults.list                  | NEW: Efficiency boost register defaults
+Added     | reglist/nvlsi7_n2p/emu/hsle/  [DIRECTORY]                        | NEW: HSLE-specific HLT/SPI memory image dir
+Added     | reglist/nvlsi7_n2p/emu/level0_pkg_chpr_model_p4e8_hsle.list      | NEW: HSLE p4e8 standard level-0 run list
+Added     | reglist/nvlsi7_n2p/emu/level0_pkg_chpr_model_p4e8_hsle_mbx_spacex.list      | NEW: HSLE p4e8 mailbox+SpaceX variant
+Added     | reglist/nvlsi7_n2p/emu/level0_pkg_chpr_model_p4e8_hsle_mbx_spacex_null.list | NEW: Null/stub of mailbox+SpaceX
+Added     | reglist/nvlsi7_n2p/emu/level0_pkg_chpr_model_p4e8_hsle_memory_test.list     | NEW: HSLE memory test run list
+Added     | reglist/nvlsi7_n2p/emu/level0_pkg_chpr_model_p4e8_hsle_null.list             | NEW: HSLE null/stub run list
+Added     | reglist/nvlsi7_n2p/emu/level0_pkg_chpr_model_p4e8_hsle_trk.list              | NEW: HSLE tracker-enabled run list
+Modified  | reglist/nvlsi7_n2p/emu/test_doa.list                             | DOA test list updated
+
+================================================================================
+  3. RTL CHANGES (src/val/emu/rtlchanges/)
+================================================================================
+
+  Path prefix for cdie0: src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/src/val/emu/testbench/rtl/
+  Path prefix for hub  : src/val/emu/rtlchanges/soc/nvlsi7_n2p/hub/src/val/emu/testbench/rtl/
+
+Status    | File                                      | Change Summary
+----------|-------------------------------------------|--------------------------------------------------
+Modified  | cdie0/.../cdie_emu_tb.sv                  | Instantiated cdie_emu_hybrid_mux_xtor; removed
+          |                                           | ~625 lines of inline IDI/BSP wire declarations
+          |                                           | (moved into the new xtor module)
+Added     | cdie0/.../cdie_emu_hybrid_mux_xtor.sv     | NEW: C-die hybrid MUX transactor RTL module
+Added     | cdie0/.../cdie_emu_hybrid_mux_xtor.sv.ref | Reference copy of above
+Added     | cdie0/.../cdie_emu_hybrid_mux_xtor.vh     | NEW: C-die hybrid MUX xtor Verilog header
+Added     | cdie0/.../cdie_emu_hybrid_mux_xtor.vh.ref | Reference copy of above
+Modified  | hub/.../hub_emu_tb.sv                     | Instantiated hub_emu_hybrid_mux_xtor in Hub TB
+Added     | hub/.../hub_emu_hybrid_mux_xtor.sv        | NEW: Hub hybrid MUX transactor RTL module
+Added     | hub/.../hub_emu_hybrid_mux_xtor.sv.ref    | Reference copy of above
+Added     | hub/.../hub_emu_hybrid_mux_xtor.vh        | NEW: Hub hybrid MUX xtor Verilog header
+Added     | hub/.../hub_emu_hybrid_mux_xtor.vh.ref    | Reference copy of above
+
+================================================================================
+  4. BUILD CONFIG / PROBE DEFINITIONS (src/val/emu/build_cfg/)
+================================================================================
+
+Status    | File                                               | Change Summary
+----------|----------------------------------------------------|-----------------------------------
+Modified  | src/val/emu/build_cfg/probes_pkg/all_probes.py    | Probe list updated to include HSLE probes
+Added     | src/val/emu/build_cfg/probes_pkg/cdie_hsle.py     | NEW: HSLE-specific C-die probe definitions
+Added     | src/val/emu/build_cfg/probes_pkg/hub_hsle.py      | NEW: HSLE-specific Hub probe definitions
+
+================================================================================
+  5. PCD WORKAREA (src/val/emu/pchlp/PCD_WORKAREA/)
+================================================================================
+
+  Short prefix: src/val/emu/pchlp/PCD_WORKAREA/emu/pchlp/pcd_run_dir/run_files/
+
+Status    | File                                          | Change Summary
+----------|-----------------------------------------------|-----------------------------------
+Modified  | .../pcd_py_files/pcd_main.py                  | PCD main script updated
+Added     | .../pcd_py_files/pcd_thc.simics               | NEW: THC Simics initialization script
+Added     | .../pcd_py_files/pcd_thc.simics.ref           | Reference copy of above
+Added     | .../pcd_py_files/spi_xtor.simics              | NEW: SPI transactor Simics init script
+Added     | .../pcd_py_files/spi_xtor.simics.ref          | Reference copy of above
+Added     | .../common_py_files/common_utils.py           | NEW: Common PCD Python utilities
+Added     | .../common_py_files/common_utils.py.ref       | Reference copy of above
+Modified  | src/val/emu/pchlp/PCD_WORKAREA/emu/pchlp/pcd_tb/f_files/emu.f                  | EMU filelist updated
+Modified  | src/val/emu/pchlp/PCD_WORKAREA/subsystems/dfx/filelists/val/rtl_opts.f          | DFX RTL options filelist updated
+Modified  | src/val/emu/pchlp/PCD_WORKAREA/verif/emu/PCD_ZSE4_UPF/Makefile.cfg             | PCD ZSE4 UPF Makefile config updated
+
+================================================================================
+  6. TESTBENCH CORE LIBRARY (src/val/emu/testbench/py_lib/)
+================================================================================
+
+Status    | File                                                    | Change Summary
+----------|---------------------------------------------------------|--------------------------------
+Modified  | PkgTlsTb/PkgTbTop.py                                   | Package testbench top updated
+Modified  | PkgTlsTb/Reset/ResetConfig.py                          | Reset config updated
+Modified  | PkgTlsTb/Reset/ResetManager.py                         | Reset manager updated
+Modified  | PkgTlsTb/Xtors/Clocking/Clocking.py                   | Clocking xtor updated
+Modified  | PkgTlsTb/Xtors/DirectWires/direct_wires.config.xml     | Direct wires config updated
+Modified  | PkgTlsTb/Xtors/IosfSb/IosfSbXtor.py                   | IOSF-SB xtor updated
+Modified  | PkgTlsTb/Xtors/XtorManager.py                          | Added IosfSbXtor import and instantiation;
+          |                                                         | IosfSbXtor.run() called
+Modified  | disable_stub_core_idi_xtors.simics                     | Updated stub IDI xtor disable (all cores)
+Added     | disable_stub_core_idi_xtors.01.simics                  | NEW: Disable stub IDI xtors for cores 0-1
+Added     | disable_stub_core_idi_xtors.0123.simics                | NEW: Disable stub IDI xtors for cores 0-3
+Added     | disable_stub_core_idi_xtors.23.simics                  | NEW: Disable stub IDI xtors for cores 2-3
+Modified  | init.simics                                             | Log level dynamic via cmd_line_opt->log_level;
+          |                                                         | multithreading enabled; power mode configurable
+          |                                                         | (LP_ALWAYS_ON / LP_NO_HARM); runtime_logger
+          |                                                         | updated to new-empty-components API
+Modified  | init_before_connect.py                                 | Pre-connect initialization updated
+Added     | iosf_sb_xtors_configuration_workaround.simics          | NEW: IOSF-SB xtor config workaround script
+
+================================================================================
+  7. HSLE HYBRID CORE FILES (src/val/emu/testbench/py_lib/hsle_core_files/)
+================================================================================
+
+Status    | File                                                 | Change Summary
+----------|------------------------------------------------------|--------------------------------
+Modified  | bios_asserts.simics                                  | BIOS assert checks updated
+Modified  | config/hybrid_cdie0p4e8_config.yml                  | Existing p4e8 config updated
+Added     | config/hybrid_cdie0p1e1_config.yml                  | NEW: 1 physical tile x 1 emu-core config
+Added     | config/hybrid_cdie0p4e8_cdie1p4e8_hube4_config.yml  | NEW: Dual-cdie (p4e8 each) + Hub (e4) config
+Added     | config/hybrid_cdie0p4e8_hube4_config.yml            | NEW: Single-cdie (p4e8) + Hub (e4) config
+Modified  | debug.simics                                         | Debug Simics script updated
+Modified  | debug_logs.simics                                    | Debug logging script updated
+Modified  | hsle_target_setup.simics                             | Target setup script updated
+Modified  | hybrid_core.simics                                   | Hybrid core Simics script updated
+Modified  | hybrid_core_init.py                                  | MAJOR REFACTOR: Switched MSR/register imports
+          |                                                      | to new criff_nvl module; added simics import *
+Modified  | hybrid_mux.py                                        | SIM_load_module added; signal path fixed
+          |                                                      | (core0 -> dcm0); hybrid_xtor_config module
+          |                                                      | now loaded; config file made explicit;
+          |                                                      | zse_engine queue path handled
+Modified  | hybrid_xtors_bypass_x86.py                          | X86 bypass xtor updated
+Modified  | mappings/hybrid_48.smart.switches.os-min.simics     | Core mapping switches updated
+Added     | read_hybrid_msrs.simics                              | NEW: Script to read/display hybrid MSR values
+Modified  | remap_pci.py                                         | PCI remapping script updated
+Modified  | target_setup.simics                                  | Target setup script updated
+
+================================================================================
+  8. TESTBENCH OVERRIDES (src/val/emu/testbench/py_lib_overrides/)
+================================================================================
+
+Status    | File                                                           | Change Summary
+----------|----------------------------------------------------------------|----------------------------
+Modified  | HubTlsTb/Reset/ResetConfig.py                                 | Hub reset config updated
+Modified  | HubTlsTb/Reset/ResetManager.py                                | Hub reset manager updated
+Modified  | HubTlsTb/TB/TBManager.py                                      | Hub TB manager updated
+Modified  | HubTlsTb/Xtors/Ddr/LpddrXtor.py                              | LPDDR xtor updated
+Modified  | HubTlsTb/Xtors/SystemMemory/SystemMemory.py                   | System memory xtor updated
+Modified  | HubTlsTb/Xtors/XtorManager.py                                 | Hub xtor manager updated
+Modified  | cdie_n2p/Cdie0TlsTb/Reset/ResetConfig.py                     | Reset CSV path made relative to
+          |                                                                | test_work_area (portability fix)
+Modified  | cdie_n2p/Cdie0TlsTb/Reset/ResetManager.py                    | Reset manager updated
+Modified  | cdie_n2p/Cdie0TlsTb/TB/DutConfig.py                          | DUT config updated
+Modified  | cdie_n2p/Cdie0TlsTb/TB/TBManager.py                          | TB manager updated
+Modified  | cdie_n2p/Cdie0TlsTb/Xtors/EmuPowerMgmt/PowerRailBfm.py      | Power rail BFM updated
+Modified  | cdie_n2p/Cdie0TlsTb/Xtors/Idi/IdiXtor.py                    | IDI xtor updated
+Modified  | cdie_n2p/Cdie0TlsTb/Xtors/XtorManager.py                     | REMOVED HVM_RESET gating: IdiXtor,
+          |                                                                | IosfSbXtor, CfiXtor, IfpXtor now always
+          |                                                                | started; TestEndChecker autostart -> True
+Modified  | cdie_p1278/Cdie0TlsTb/TB/DutConfig.py                        | DUT config updated for p1278 variant
+Modified  | cdie_p1278/Cdie0TlsTb/Xtors/EmuPowerMgmt/PowerRailBfm.py    | Power rail BFM updated for p1278 variant
+
+================================================================================
+  9. SCRIPTS, TESTS & TOOL OVERRIDES
+================================================================================
+
+Status    | File                                                                           | Change Summary
+----------|--------------------------------------------------------------------------------|-----------------------------
+Modified  | src/val/emu/scripts/fc_trackers/fc_cpuid.py                                   | Signal path fix:
+          |                                                                                | par_bsl.corer_wrap.corel ->
+          |                                                                                | par_bsr.corer_wrap.corer
+          |                                                                                | for CDIE0 P1 and P5 cores
+Modified  | src/val/emu/testbench/spark/args.yml                                          | Key renamed: log-level -> log_level
+Modified  | src/val/emu/testbench/spark/sle.simics                                        | Python imports added; env var
+          |                                                                                | switched WORKAREA -> MODEL_ROOT
+Modified  | src/val/emu/testbench/tool_overrides/pydoh_nvl/                               | Stubbed core response model
+          |   25.02.001.pkg_patch_ax/Models/Cdie/CdieStubbedCoreResponse.py               | updated
+Modified  | src/val/emu/testbench/tool_overrides/pydoh_nvl/                               | PyDOH main model updated
+          |   25.02.001.pkg_patch_ax/Models/Pkg/PydohMain.py                              |
+Added     | src/val/emu/testbench/tool_overrides/tlspylib/NVL_24.03.013_sle_hsle/ [DIR]  | NEW: HSLE-specific TLSpylib
+          |                                                                                | override package
+Modified  | src/val/emu/tests/sle_workarounds/sle_verify_trackers.py                      | Tracker verification updated
+Added     | src/val/emu/tests/sle_workarounds/nvlax_efficiency_boost.simics                | NEW: NVLax efficiency boost
+          |                                                                                | workaround Simics script
+
+================================================================================
+  SUMMARY OF KEY THEMES
+================================================================================
+
+Theme                        | Description
+-----------------------------|----------------------------------------------------------
+Hybrid MUX Transactor        | New RTL modules (cdie_emu_hybrid_mux_xtor,
+                             | hub_emu_hybrid_mux_xtor) extracted ~625 lines of inline
+                             | IDI/BSP wire declarations from _emu_tb.sv into dedicated
+                             | synthesizable xtor files for both C-die and Hub
+-----------------------------|----------------------------------------------------------
+New HSLE Run Lists           | 8 new reglist entries covering standard, null, mailbox,
+                             | SpaceX, memory-test, and tracker HSLE test scenarios
+                             | (all p4e8 configuration)
+-----------------------------|----------------------------------------------------------
+Expanded Hybrid Configs      | 3 new YAML configs for 1-core (p1e1), cdie+hub (p4e8+e4),
+                             | and dual-cdie+hub (2xp4e8+e4) topologies
+-----------------------------|----------------------------------------------------------
+Simics 7 + VCS Engine        | transactors.json overhauled: moved from custom-patched
+                             | emu_engine to vcs_engine; full Simics 7 package list
+                             | added to Makefile.cfg (25+ packages)
+-----------------------------|----------------------------------------------------------
+HVM_RESET gating removed     | All xtors (IDI, IOSF-SB, CFI, IFP) now unconditionally
+                             | started; TestEndChecker autostart set to True
+-----------------------------|----------------------------------------------------------
+Selective Core IDI Disable   | Three new .simics scripts enable per-group core stubbing
+                             | (.01, .23, .0123) for partial-core HSLE configurations
+-----------------------------|----------------------------------------------------------
+Signal/Hierarchy Path Fixes  | fc_cpuid.py: par_bsl.corel -> par_bsr.corer for CDIE0
+                             | P1/P5; hybrid_mux.py: core0 -> dcm0 signal name fix
+-----------------------------|----------------------------------------------------------
+Power Mode Flexibility       | init.simics supports LP_ALWAYS_ON vs LP_NO_HARM modes
+                             | via cmd_line_opt->power_mode; log level made dynamic
+-----------------------------|----------------------------------------------------------
+New PCD Scripts              | THC and SPI xtor Simics scripts added for PCD bring-up
+                             | flows; common_utils.py added for shared PCD utilities
+-----------------------------|----------------------------------------------------------
+MSR Access                   | New read_hybrid_msrs.simics for hybrid MSR inspection;
+                             | hybrid_core_init.py switched to criff_nvl register defs
+
+================================================================================

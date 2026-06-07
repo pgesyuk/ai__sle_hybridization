@@ -1,0 +1,41 @@
+# HSLE Converter — config.yaml (NVLax example)
+# All settings can be overridden via CLI flags.
+
+# ── ADDED file conflict policy ───────────────────────────────────────────────
+# Controls what happens when an ADDED file's relative path already exists in
+# the new SLE model being converted.
+#
+#   manual  (recommended) — flag for human review; safe for versioned models
+#   auto    — overwrite if content differs from ref_hsle; risky for new variants
+#
+added_conflict_policy: manual
+
+# ── REMOVED file safety check ───────────────────────────────────────────────
+# When true: only auto-delete if the file in the new model still matches the
+# reference SLE content exactly (i.e. it was not updated in the new model).
+# When false: always delete, regardless of content.
+#
+removed_safety_check: true
+
+# ── MODIFIED file merge strategy ────────────────────────────────────────────
+#   3way  — git merge-file only; flag 'conflicts' if any conflict markers remain
+#   llm   — use GitHub Copilot LLM only (no 3-way attempt)
+#   auto  — try 3-way first; fall back to LLM on conflict/error; flag if LLM fails
+#
+patch_mode: auto
+
+# ── LLM file size limits ─────────────────────────────────────────────────────
+# Files exceeding either limit are flagged as 'too_large' and go to manual review
+# instead of being sent to the LLM.
+#
+llm_max_chars: 10000
+llm_max_lines: 300
+
+# ── Output ───────────────────────────────────────────────────────────────────
+# Stem name for the report files written into the output directory.
+report_name: conversion_report
+
+# Unix group to assign to all files and directories in the output model.
+# Every output path will also have u+w and g+w set so the group can modify it.
+# Set to "" or remove this key to skip group assignment.
+output_group: soc
