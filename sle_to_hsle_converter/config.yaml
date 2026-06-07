@@ -1,4 +1,5 @@
-# HSLE Converter — config.yaml (NVLax example)
+# HSLE Converter — config.yaml
+# Global defaults + project registry for multi-project support.
 # All settings can be overridden via CLI flags.
 
 # ── ADDED file conflict policy ───────────────────────────────────────────────
@@ -39,3 +40,27 @@ report_name: conversion_report
 # Every output path will also have u+w and g+w set so the group can modify it.
 # Set to "" or remove this key to skip group assignment.
 output_group: soc
+
+# ── Project registry ─────────────────────────────────────────────────────────
+# Maps project aliases to their analysis file + optional project-specific overrides.
+# Aliases are case-insensitive; dashes and underscores are normalized to nothing
+# so "nvl-ax", "nvl_ax", and "nvlax" all resolve to the same entry.
+#
+# Supported per-project keys (all optional — fall back to global defaults above):
+#   analysis      path to analysis_heuristic.md for that project  [REQUIRED]
+#   description   human-readable label shown in the converter banner
+#   donor         default donor HSLE model path (can be overridden with --donor)
+#   output_group  unix group for output files
+#   patch_mode    3way | llm | auto
+#
+projects:
+  nvlax:
+    description: "NVL-AX SLE → HSLE hybridization"
+    analysis: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/hybridization/analysis_nvlax/analysis_heuristic.md
+    donor: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/hybridization/src_donor_models/sle_emu-nvlax-a0-26ww12a_hsle_v07_cores__msr_co
+    output_group: soc
+
+  nvls:
+    description: "NVL-S SLE → HSLE hybridization (RTL Core PM / IA core stub)"
+    analysis: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/hybridization/analysis_nvls/analysis_heuristic.md
+    output_group: soc
