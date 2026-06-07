@@ -1,0 +1,119 @@
+Model Transition Analysis: SLE -> HSLE
+Generated: 2026-06-07 00:28:52
+SLE path: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/hybridization/src_donor_models/pkg-nvlpkg-a0-1p0-c.14d_h.14g_p.07_p.11_sle_hsle.8_s7z24_co
+HSLE path: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/hybridization/src_donor_models/pkg-nvlpkg-a0-1p0-c.14d_h.14g_p.07_p.11_sle_hsle.8_rtl_core_pm_co
+Total differences: 66 (10 added, 55 modified, 1 removed)
+
+NOTE: Entries in section [RTL Core PM / IA Core Hybridization] are sourced from developer
+notes and .ref intra-model diffs. These files are identical in both snapshots but capture
+the compile-time IA-core hybridization contract. Files marked [developer-noted] do not yet
+exist in either snapshot and must be created when converting a clean SLE model.
+
+[RTL Core PM / IA Core Hybridization]
+MODIFIED src/val/emu/rtlchanges/soc/nvlsi7/cdie1/src/val/emu/testbench/rtl/cdie_emu_tb.sv :: Core TB restructured for HSLE. .ref->HSLE diff: adds CDIE0_TB_ENABLE/CDIE1_TB_ENABLE parameters; wraps per-die iosf_sb_xtor_ccp and idi_xtor_ccp instantiations in generate-if guards; removes generic single-die cdie_emu_idi_xtor_ccp; adds cdie_emu_hybrid_mux_xtor instantiation (hybrid mux for IOSF SB steering); passes .CDIE_ID(CDIE1_TB_ENABLE) to core_uri_connect and santa_uri_maker; comments out cdie_emu_pydoh_xtors for fast PyDoh mode.
+MODIFIED src/val/emu/rtlchanges/soc/nvlsi7/cdie1/src/val/emu/testbench/rtl/cdie_pwr_jem_tracker.sv :: D2D disabled + bind path fixed for HSLE. .ref->HSLE diff: CDIE_D2D_ENABLE changed 1->0; bind path corrected from `EMU_CDIE.cdie_emu_tb to `CDIE.cdie_emu_tb.
+MODIFIED src/val/emu/rtlchanges/soc/nvlsi7/cdie1/src/val/emu/testbench/rtl/cdie_emu_tlms.sv :: TLM bind stubs to par_mlc and icore removed. [developer-noted: not yet in snapshot -- must be patched when converting a clean SLE model]
+MODIFIED src/val/emu/rtlchanges/soc/nvlsi7/cdie1/src/val/emu/testbench/rtl/cdie_pwr_jem_cstate_tracker.sv :: C-state tracker binds to par_mlc/icore removed. [developer-noted: not yet in snapshot]
+MODIFIED src/val/emu/rtlchanges/soc/nvlsi7/cdie1/src/val/emu/rtlchanges/subip/hip/cdie_p1278_core/core/core_te/verif/tb/ti/core_top_ti.v :: Removes bind statements into par_mlc and icore submodule hierarchy; those modules are stubbed in HSLE compile. [developer-noted: not yet in snapshot]
+MODIFIED src/val/emu/rtlchanges/soc/nvlsi7/cdie1/subip/hip/cdie_p1278_core/target/core/gen/tlm/rtl/txte_tlm_top/txte_tlm_top_collectors_binds.vs :: Removes TXte TLM collector binds to par_mlc and icore; keeps par_pm and surviving subsystem collectors. [developer-noted: not yet in snapshot]
+MODIFIED verif/emu/rtl_cfg/global_emu_common_elab_opts.f :: Drops -ignore initializer_driver_checks (was FA workaround for 24.03-1); HSLE exposes UPF elaboration warnings from stubbed par_mlc/icore hierarchy.
+MODIFIED verif/emu/rtl_cfg/PKG_IP_CHANGES.cfg :: RTL override manifest; already contains HSLE-aware entries for cdie_emu_tb.sv, cdie_pwr_jem_tracker.sv, txte_tlm_top bind files (both cdie0 and cdie1). Identical in both snapshots.
+MODIFIED src/val/emu/build_cfg/probes_pkg/cdie_hsle.py :: Forces hyb_sel, hyb_sel_idi, hyb_sel_iosf_sb on each Big Core and Atom mux instance; forces par_pm.gp_side_pok and par_pm.pm_side_pok per coreX_wrap path to keep PM functional while IA cores are stubbed. Identical in both snapshots.
+MODIFIED src/val/emu/build_cfg/fwc/fwc_top.v :: FWC top already references pythonsv_iosf_sb_xtors_fwc.v and par_pm sub-FWC modules. Identical in both snapshots.
+MODIFIED verif/emu/buildit/EmuGen.py :: Removes probe generation for par_mlc and icore in gen stage. [developer-noted: identical in both snapshots -- must be updated for clean SLE conversion]
+ADDED src/val/emu/rtlchanges/soc/nvlsi7/cdie1/subip/hip/cdie_p1278_core/target/core/dft_insert/client_1278p6/core_client/rtl_out/core_client.v :: Primary compile-time IA core stub: replaces cdie_p1278_core compile with RTL that stubs par_mlc (MLC cache) and icore (IA execute pipeline) while preserving par_pm as live RTL hierarchy. [developer-noted: not yet in snapshot]
+ADDED src/val/emu/build_cfg/fwc/par_pm_fwc.v :: Runtime FWC for par_pm PM state-machine inputs; drives power-on and clock-gate signals to functional defaults when par_mlc/icore driver logic is absent. Required alongside core_client.v stub. [developer-noted: not yet in snapshot]
+
+[IOSF SB Transactors]
+MODIFIED src/val/emu/testbench/py_lib/PkgTlsTb/Xtors/IosfSb/IosfSbXtor.py :: Switches the Simics-side IOSF SB device from `libiosf_sb_xtor.so` + adapter init to direct `libiosf_sb_simics.so`, keeping the named IOSF SB endpoints but removing the legacy cpp adapter hook.
+MODIFIED src/val/emu/testbench/py_lib/iosf_sb_xtors_configuration_workaround.simics :: Gates the legacy manual IOSF SB xtor creation behind `if ((cmd_line_opt->hsle) == FALSE)` and drops `cpp_tb_fn`; HSLE no longer instantiates the old per-core workaround xtors from this script.
+MODIFIED src/val/emu/testbench/py_lib/hsle_core_files/hybrid_core_init.py :: Preserves sideband access through hybrid core plumbing: P2SB redirect regs move to `0x41200f90d0/d4/d8`, PCD SBREG monitoring switches to `mb.pcd.pci_mem` + `mb.pcd.p2sb0.bank.sbreg_bank`, and a Funny-I/O SAI callback is added.
+MODIFIED src/val/emu/testbench/py_lib/hsle_core_files/mappings/hybrid_null.smart.switches.os-min.simics :: Adds `nvl_mb_pcd_srm4_port_gpsbSOCPCHPRTID0xc3` and `...srm5...0xc4` with `-use-simics`, explicitly steering those GPSB ports into the Simics hybrid path.
+MODIFIED verif/emu/transactors.json :: Retargets IOSF/HSLE runtime modules: keeps `iosf_sb_xtor` but points it at `spark-1.12.9.sem.timer.credit_init.credit_reinit`, adds `jem`/`null_engine`, and bumps `hybrid_core`, `hybrid_xtor_config`, and `transaction_shadower` used to carry SB traffic in HSLE.
+
+[HSLE Register Lists]
+MODIFIED reglist/common/emu/common_pkg_chppr.list :: Updates the disabled `emu_cut_driver_clock.py` example from scale 60 to 80 (`##+defaults ... --scale 80 ...`), documenting newer CHPPR/ZSE timing collateral.
+MODIFIED reglist/common/emu/common_xdie_bkc.list :: Points `BKC_ROOT` to the `...Rev1_nullChanges` collateral tree, aligning HSLE with the null-engine/HSLE xdie package.
+MODIFIED reglist/common/emu/hsd_14022935859_credits.simics :: Keeps the credit workaround but converts waits from `bp.cycle.wait-for` to `emu.engine.wait-for-cycle -relative` for newer Simics CLI behavior.
+MODIFIED reglist/nvlsi7/emu/hsle/debug/getvalue.simics :: Same debug flow, but all long delays are converted to `emu.engine.wait-for-cycle -relative`.
+MODIFIED reglist/nvlsi7/emu/hsle/null/null_fsp_test_end.simics :: Simplifies FSP shell detection from `bp.console_string.wait-for ...` to direct `nvl.serconsole.con.wait-for-string "UEFI Interactive Shell"`.
+MODIFIED reglist/nvlsi7/emu/hsle/warm_reset.simics :: Warm-reset delay switches to `emu.engine.wait-for-cycle -relative 10000`.
+MODIFIED reglist/nvlsi7/emu/level0_pkg_chppr_model_p4e8_zse.list :: Uncomments `.include $WORKAREA/reglist/common/emu/nvlsi7_p4e8_reset_fetch_pegoste_zse.list`, so reset-fetch collateral is now active in the HSLE level0 list.
+
+[HSLE Emulation Scripts]
+MODIFIED src/val/emu/testbench/py_lib/hsle_core_files/bios_asserts.simics :: Moves BIOS assert detection to `$uart.wait-for-string` and `emu.engine.wait-for-cycle`, keeping the same PEI/ASSERT checks with updated Simics commands.
+MODIFIED src/val/emu/testbench/py_lib/hsle_core_files/target_setup.simics :: Converts setup milestones to direct serial waits (`$uart.wait-for-string`, `$system.serconsole.con.wait-for-string`) instead of breakpoint console waits.
+MODIFIED src/val/emu/testbench/py_lib/hsle_core_files/testload.simics :: Uses `wait-for-hap X86_HLT_Instr` and newer cycle-wait syntax, but keeps the ACED/DEAD completion check on `cdie[x].ccp[0].module.core[0][0]`.
+MODIFIED src/val/emu/testbench/py_lib/init.simics :: Renames the CLI knob from `log_level` to `log-level`, recreates `emu.cfg.runtime_logger`, and swaps several legacy debug/list commands for current Simics equivalents.
+MODIFIED src/val/emu/testbench/py_lib/init_before_connect.py :: Re-enables `ctypes.CDLL("x11-support.so", mode=ctypes.RTLD_GLOBAL)` before connect.
+MODIFIED src/val/emu/testbench/py_lib/pcd_post_connect.simics :: Re-enables the Xtensa tracker load for non-null engines instead of leaving the whole block commented out.
+MODIFIED src/val/emu/testbench/py_lib/xdie_scripts/check_tcss_usb3_port0.simics :: USB3 port0 polling delays are migrated to `emu.engine.wait-for-cycle`.
+MODIFIED src/val/emu/testbench/py_lib/xdie_scripts/check_tcss_usb3_port1.simics :: USB3 port1 polling delays are migrated to `emu.engine.wait-for-cycle`.
+MODIFIED src/val/emu/testbench/py_lib/xdie_scripts/dis_fast_reset_mode.simics :: Fast-reset disable script now uses `emu.engine.wait-for-cycle 1000000`.
+MODIFIED src/val/emu/testbench/py_lib/xdie_scripts/force_soc_dmi_normal.simics :: Updates the commented breakpoint syntax from `bp.wait-for-breakpoint` to `wait-for-breakpoint`.
+MODIFIED src/val/emu/testbench/tool_overrides/tlspylib/NVL_24.04.003_sle_hsle/TlsPyLib/Lib/XtorSysMemory.py :: Drops the obsolete second argument from `image.save_diff(filename_craff)`, matching the active Simics image API.
+
+[Testbench / TB Changes]
+MODIFIED filelists/val/vip.list :: Refreshes VIP collateral: adds newer entries such as `IOSF_PVC`, `IOSF_SVC`, `axi_jem_tracker`, `bios_ipsd`, and `cbo_jem_tracker` while removing many Simics7/SLES15-era VIP aliases and local placeholders.
+MODIFIED filelists/val/vip_config.list :: Applies the same VIP inventory cleanup in the config list, removing stale iosf/uvm/env aliases that were present in the SLE Simics7 bundle.
+MODIFIED flows/pydoh/tool.cth :: Moves `pydoh_path` back from a private Simics7 modules tree to the standard `toolversion(pydoh)` lookup.
+MODIFIED src/val/emu/build_cfg/probes_pkg/ProbesLib.py :: Probe generation no longer adds `-object_not_found warning`; missing probe objects stop generating warning-only noise.
+MODIFIED src/val/emu/build_cfg/sle_dut.utf :: Replaces the commented delayed-trigger workaround with direct `ztopbuild -advanced_command {enable delayed_trigger}`.
+MODIFIED src/val/emu/build_cfg/snps_recommended.utf :: Removes the temporary `Compile:DropSelfInvert=true` carry-over workaround block.
+MODIFIED src/val/emu/build_cfg/vcserrs_emu.ctrl :: Removes the temporary `-xlrm module_xmr` FA workaround.
+MODIFIED src/val/emu/scripts/sle_run_scripts/run_simregress.L0.chppr_zse5.csh :: Updates the two FSDB/TREX capture start timestamps, keeping the same regression flow with shifted debug windows.
+MODIFIED src/val/emu/testbench/spark/args.yml :: Renames the spark argument key from `log_level` to `log-level`.
+MODIFIED src/val/emu/testbench/spark/options.yml :: Switches the default spark host class from `SLES15` to `SLES12`.
+MODIFIED src/val/emu/testbench/spark/sle.simics :: Drops the explicit `@import ...` preamble at the top of the script and relies on the active Simics runtime imports.
+
+[Platform Config]
+Git history shows HSLE HEAD = `Platform Config XML updated`, but there is **no net SLE→HSLE tree delta** in the platform-config XML files checked here (`src/val/emu/tests/platfconfig/emu/nvlpkg_A0_p4e8_hsle.xml`, `src/val/emu/tests/platfconfig/emu/nvlpkg_A0_p4e8e4.xml`, and `src/val/emu/tests/platfconfig/nvlpkg_A0_p4e8e4.xml`).
+Converter implication: no platform-config file entries are required for this model transition even though the branch history contains that commit.
+
+[Offline DPI Trackers]
+Git history shows HSLE commit `c4581ad35 Offline DPI Tracker enablement` added large tracker collateral on that branch, but the **net SLE→HSLE tree diff** retains only the visible footprints already captured above (notably refreshed VIP inventory plus `jem` presence in `verif/emu/transactors.json`).
+There is no standalone `tracker_wrapper.py`/tracker-file row in the final inter-model diff, so converter action should focus on the surviving collateral references rather than replaying the whole commit.
+
+[Integration / RTL Hotfixes]
+REMOVED verif/emu/; unset PROMPT_COMMAND :: Stray empty shell-artifact file removed; no model functionality is carried by this file.
+MODIFIED verif/emu/Makefile.env :: Simplifies compile-time library setup by removing the explicit `BOOST_PATH` export and trimming `LD_LIBRARY_PATH`/spacing around `SIMICS_PROJECT`.
+MODIFIED verif/emu/emuvcs/global_emuvcs_elab_opts.f :: Relaxes elaboration KDB selection from `-kdb=common_elab` to plain `-kdb`.
+MODIFIED verif/emu/rtl_cfg/CDIE_IP_CHANGES.cfg :: Matches the KDB simplification in CDIE RTL config (`-kdb` instead of `-kdb=common_elab`).
+MODIFIED verif/emu/rtl_cfg/gcd_common_elab_opts.f :: Matches the same KDB simplification in GCD elaboration options.
+MODIFIED verif/emu/rtl_cfg/global_emu_common_elab_opts.f :: Removes the temporary `-ignore initializer_driver_checks` FA workaround block.
+MODIFIED verif/emu/rtl_cfg/global_emuvcs_elab_opts.f :: Matches the same KDB simplification for global emuvcs elaboration.
+MODIFIED verif/emu/rtl_cfg/global_sem_common_elab_opts.f :: Matches the same KDB simplification for SEM elaboration.
+MODIFIED verif/emu/tool.cth :: Backs away from the SLE Simics7 tool stack: ZSE/VCS/Verdi versions change, `simics_path` moves off the private Simics7 tree, and the custom DVB override is removed.
+MODIFIED verif/emu/zebu/Makefile.cfg :: Retargets the Zebu runtime from the Simics7 NVL-S bundle to the `installed_packages/2025ww16.5.00_24` stack, changes TB classes to `SLES12`, and trims Python/LD path setup.
+
+
+[RTL Core PM Runtime Changes]
+NOTE: All entries in this section are from developer notes. Files marked [developer-noted] do not
+exist in either snapshot and must be created. Key mechanism: -hsle_rtl_core_pm switch gates all
+runtime paths that differ when IA cores are stubbed. Invoked via +options -ms -hsle_rtl_core_pm -ms-
+in the test list file.
+
+MODIFIED src/val/emu/testbench/py_lib/hsle_core_files/hybrid_core_init.py :: Guarded using hsle_rtl_core_pm. Snapshot diff: empty_components -> component for Simics class creation. Additionally: runtime paths referencing par_mlc/icore registers wrapped in hsle_rtl_core_pm guard. [developer-noted: guards not yet in snapshot]
+MODIFIED src/val/emu/testbench/py_lib/hsle_core_files/hybrid_mux.py :: Guarded using hsle_rtl_core_pm. Identical in both snapshots. Must skip mux-setup paths depending on icore/par_mlc being live; hsle_rtl_core_pm flag gates those paths at runtime. [developer-noted: guard not yet in snapshot]
+MODIFIED src/val/emu/testbench/py_lib_overrides/cdie_p1278/Cdie0TlsTb/Reset/ResetCycle0.py :: Remove par_mlc and icore references; EMU_MODEL_TARGET paths. Via .ref diff: adds import os; adds hdie_rpm_vip_config_yaml_path from EMU_MODEL_TARGET env; guards force_initial_tsc_value.run_tcm with cfg_hub_connected check; switches hard-coded yaml to EMU_MODEL_TARGET/gen_stage/subip_collateral_for_pylib/hdie_rpm_vip_config.yaml. Developer-noted: icore0/icore1 enabled_icore loops (SCR patches, lock_pred, SMC filter, par_mlc.mlc paths) must be removed or guarded.
+ADDED src/val/emu/testbench/py_lib_overrides/cdie_p1278/Cdie0TlsTb/Reset/ResetPhase3.py :: New reset phase for cdie0 null-engine/HSLE mode. Not in either snapshot; create parallel to Cdie1TlsTb/Reset/ResetPhase3.py with Cdie0TlsTb namespace imports; adds SIM_log_info for Ucode Reset Completed and ACED achieved milestones. [developer-noted: not yet in snapshot]
+ADDED src/val/emu/testbench/py_lib_overrides/cdie_p1278/Cdie0TlsTb/TB/TBManager.py :: Icecode load bypass for null_engine (HSLE) mode. Not in either snapshot; create parallel to Cdie1TlsTb/TB/TBManager.py. Cdie1 .ref diff shows: adds conf import; inserts early-return guard if conf.emu.engine.classname == "null_engine": return to skip TB manager setup when running HSLE mode. [developer-noted: not yet in snapshot]
+MODIFIED src/val/emu/testbench/spark/args.yml :: Add hsle_rtl_core_pm switch. Existing snapshot diff: log_level -> log-level. Must also add: hsle_rtl_core_pm: { default: false, type: 'b', help: 'Enable RTL Core PM HSLE mode' }. Provides the CLI knob consumed by hybrid_core_init.py, hybrid_mux.py, ResetCycle0.py, and the list +options. [developer-noted: switch not yet in snapshot]
+ADDED reglist/nvlsi7/emu/hsle/debug/rtl_core_pm_boot.simics :: RTL Core PM boot sequence script. Provides PM-specific boot milestones (ROM init, FW download, PM state machine ready) when IA cores are stubbed. Invoked via +options -ms -hsle_rtl_core_pm -ms-. [developer-noted: not yet in snapshot]
+ADDED reglist/nvlsi7/emu/hsle/debug/rtl_core_pm_CR.simics :: RTL Core PM cold reset debug script. Routes PM state transitions through par_pm RTL monitors while icore reset handshakes are bypassed. [developer-noted: not yet in snapshot]
+ADDED reglist/nvlsi7/emu/hsle/debug/rtl_core_pm_S3.simics :: RTL Core PM S3 suspend/resume debug script. Handles PM IOSF SB and GP sequences for S3 entry/exit without icore participation. [developer-noted: not yet in snapshot]
+ADDED reglist/nvlsi7/emu/hsle/debug/rtl_core_pm_S4.simics :: RTL Core PM S4 hibernate debug script. S4 power state flow adapted for HSLE; par_pm FSM progresses through C6/C8 states without icore clock-gate handshakes. [developer-noted: not yet in snapshot]
+ADDED reglist/nvlsi7/emu/hsle/debug/rtl_core_pm_S5.simics :: RTL Core PM S5 soft-off debug script. S5 (soft power-off) PM flow for HSLE; icore shutdown handshakes bypassed; par_pm drives IOSF GP/SB soft-off packet creation. [developer-noted: not yet in snapshot]
+ADDED reglist/nvlsi7/emu/hsle/debug/rtl_core_pm_WR.simics :: RTL Core PM warm reset debug script. Warm reset flow for HSLE; skips icore reset-fetch logic; relies on par_pm reset sequencer. Companion to rtl_core_pm_CR.simics. [developer-noted: not yet in snapshot]
+
+LIST FILE NOTE: +options -ms -hsle_rtl_core_pm -ms- must be added to the test list file to activate all RTL Core PM runtime scripts. When porting to a new SLE model, this option line and all six rtl_core_pm_*.simics scripts must be added alongside args.yml and the guarded Python changes.
+
+[Key Themes]
+- IA core hybridization -- compile-time stub (RTL Core PM entries): the fundamental HSLE compile-time change is core_client.v -- a stub that replaces cdie_p1278_core with empty par_mlc/icore while keeping par_pm as live RTL. Five supporting files cascade from this: cdie_emu_tlms.sv, cdie_pwr_jem_cstate_tracker.sv, core_top_ti.v, and txte_tlm_top_collectors_binds.vs each remove bind statements pointing into the absent hierarchy; verif/emu/buildit/EmuGen.py removes the gen-stage probe generation for those same modules.
+- par_pm preservation is explicit: cdie_hsle.py forces par_pm.gp_side_pok and par_pm.pm_side_pok on every Big Core and Atom Core path (sfc_bcslice0.par_bsX.coreX_wrap.coreX). par_pm_fwc.v provides companion force-write collateral for PM state-machine inputs otherwise driven by the missing par_mlc/icore.
+- Hybrid mux bridges IOSF SB from RTL to Simics: cdie_emu_tb.sv instantiates cdie_emu_hybrid_mux_xtor -- the per-core RTL mux that routes IOSF SB traffic either from the real Simics IA model or from the HSLE transactor path. hyb_sel_iosf_sb is forced in cdie_hsle.py for every hybridized core, directing SB traffic through the Simics path away from stubbed RTL endpoints.
+- IA core removal in this NVL-S diff: the clearest behavioral change is that src/val/emu/testbench/py_lib/iosf_sb_xtors_configuration_workaround.simics now wraps the old manual xtor creation inside `if ((cmd_line_opt->hsle) == FALSE)`. HSLE stops using the legacy per-core workaround path; the removed hookup is the manual workaround layer, not the IOSF SB protocol itself.
+- How IOSF SB remains intact: the replacement path is Simics/hybrid-core based. hybrid_core_init.py rewires sideband preservation through hybrid-core smart mapping: mb.pcd.pci_mem, mb.pcd.p2sb0.bank.sbreg_bank, redirect regs at 0x41200f90d0/d4/d8, and a sai_change_funny_io callback. verif/emu/transactors.json keeps the iosf_sb_xtor module active and updates the hybrid-core/transactor packages.
+- reglist/common/emu/nvlsi7_p4e8_pythonsv_iosf_sb_xtors_zse.list: unchanged between SLE and HSLE. Explicitly enables die-specific xtors with +options PCH_IOSF_SB_XTORS=1 PCD_IOSF_SB_XTORS=1 CDIE1_IOSF_SB_XTORS=1 HUBDIE_IOSF_SB_XTORS=1. Validation intent for IOSF SB preserved.
+- Integration hotfix IOSF SBC endpoints: all checked integration/hotfix/rtl/*/sip/*/subIP/iosf_sbc_ep/ directories are byte-for-byte identical between SLE and HSLE. IOSF SB preservation is not from RTL endpoint edits; it is preserved above RTL by keeping collateral/tests and changing the hybrid-core/transactor hookup.
+- Files not yet in either snapshot (developer-noted): core_client.v, par_pm_fwc.v, cdie_emu_tlms.sv, cdie_pwr_jem_cstate_tracker.sv, core_top_ti.v, txte_tlm_top_collectors_binds.vs, and EmuGen.py probe-exclusion changes must be created/patched when converting a clean SLE model. The converter cannot auto-apply these from the current donor snapshot.
