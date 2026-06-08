@@ -195,7 +195,19 @@ Rules:
 - Do NOT blindly copy the reference HSLE content — the new SLE file may differ.
 - Preserve all content that is NOT related to the diff's change.
 - Return ONLY the final file content. No markdown fences, no explanations, no prose.
-- If you are not confident, return the original new SLE content unchanged."""
+- If you are not confident, return the original new SLE content unchanged.
+
+Simics7 preferences (always apply when relevant):
+- In .simics scripts use the Simics7 serial-console API:
+    $uart.wait-for-string  /  $system.serconsole.con.wait-for-string
+  rather than the older  bp.console_string.wait-for  form.
+- Keep wait-for-hap patterns (e.g. wait-for-hap X86_HLT_Instr) and other
+  Simics7 HAP-based synchronisation; do not replace them with legacy waits.
+- Preserve Simics7 Python module imports and runtime-loader patterns.
+- In NBCLASS / CLASS_ assignments keep SLES12 (not SLES11) specifications.
+- For simics_path in .cth tool-config files prefer the standard CTH toolversion
+  lookup (/p/hdk/cad/windriver/simics/toolversion(simics)) over hardcoded
+  private build paths; use cth_query-based SIMICS_HOME resolution in Makefiles."""
 
 
 def get_copilot_token() -> str:
@@ -338,6 +350,7 @@ def llm_merge_file(
     diff_text: str,
     description: str,
     donor_path: str | None = None,
+    merge_hints: str = '',
     max_chars: int = 50_000,
     max_lines: int = 1_500,
 ) -> tuple[str, str]:
@@ -388,6 +401,7 @@ def llm_merge_file(
         f"New SLE file to transform (apply analogous changes):\n"
         f"```\n{current_content}\n```\n\n"
         f"Change description: {description}"
+        + (f"\n\nAdditional project-specific guidance:\n{merge_hints}" if merge_hints else '')
     )
 
     try:

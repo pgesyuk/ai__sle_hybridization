@@ -33,6 +33,23 @@ patch_mode: auto
 llm_max_chars: 50000
 llm_max_lines: 1500
 
+# ── LLM merge hints ──────────────────────────────────────────────────────────
+# Free-text guidance appended to every LLM merge prompt as "Additional
+# project-specific guidance".  Use this to encode domain preferences that
+# should influence how the LLM resolves ambiguous merges.
+# Per-project overrides are supported by adding a merge_hints key inside the
+# project entry in the registry below.
+#
+merge_hints: |
+  Simics7: in .simics scripts prefer $uart.wait-for-string and
+  $system.serconsole.con.wait-for-string over bp.console_string.wait-for.
+  Keep wait-for-hap patterns (e.g. wait-for-hap X86_HLT_Instr) and other
+  Simics7 HAP-based synchronisation intact.
+  Preserve Simics7 Python module imports and runtime-loader patterns.
+  In NBCLASS / CLASS_ assignments keep SLES12 (not SLES11).
+  For simics_path in .cth files use /p/hdk/cad/windriver/simics/toolversion(simics)
+  (standard CTH toolversion lookup); use cth_query-based SIMICS_HOME in Makefiles.
+
 # ── Output ───────────────────────────────────────────────────────────────────
 # Stem name for the report files written into the output directory.
 report_name: conversion_report
