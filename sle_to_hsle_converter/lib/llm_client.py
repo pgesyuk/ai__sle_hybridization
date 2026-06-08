@@ -212,7 +212,10 @@ def get_copilot_token() -> str:
         oauth_token = _prompt_for_token()
         prompted = True
 
-    # Exchange for Copilot token (with one re-prompt on auth failure)
+    # Exchange for Copilot token.
+    # Re-prompt at most once — but ONLY if the bad token came from a cached/stored
+    # source.  If the user just typed/pasted the token in this session (prompted=True)
+    # and it still fails, surface the error immediately instead of asking again.
     for attempt in range(2):
         try:
             data = _exchange(oauth_token)
@@ -226,19 +229,18 @@ def get_copilot_token() -> str:
             return _token_cache['token']
         except RuntimeError as exc:
             err = str(exc)
-            if '401' in err or '403' in err or '404' in err:
-                # Token expired or lacks Copilot access — clear and re-prompt once
+            if ('401' in err or '403' in err or '404' in err) and attempt == 0 and not prompted:
+                # Stored/env/cached token expired — clear it and ask the user once
                 _clear_stored_token()
                 _token_cache.clear()
-                if attempt == 0:
-                    reason = "Previous token expired or lacks Copilot access"
-                    try:
-                        oauth_token = _prompt_for_token(reason)
-                        prompted = True
-                        _oauth_cache['source'] = 'prompt'
-                        continue
-                    except RuntimeError as prompt_err:
-                        raise RuntimeError(str(prompt_err)) from None
+                reason = "Stored token expired or lacks Copilot access"
+                try:
+                    oauth_token = _prompt_for_token(reason)
+                    prompted = True
+                    _oauth_cache['source'] = 'prompt'
+                    continue
+                except RuntimeError as prompt_err:
+                    raise RuntimeError(str(prompt_err)) from None
             raise
 
 
