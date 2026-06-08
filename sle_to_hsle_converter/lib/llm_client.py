@@ -32,17 +32,39 @@ Rules:
 
 
 def get_copilot_token() -> str:
-    """Return a valid short-lived Copilot API token, refreshing when needed."""
+    """Return a valid short-lived Copilot API token, refreshing when needed.
+
+    Token source priority:
+      1. Cached token (if not expired)
+      2. ``gh auth token`` CLI (when gh is authenticated)
+      3. GH_TOKEN or GITHUB_TOKEN environment variables
+      4. COPILOT_GITHUB_TOKEN environment variable
+    """
     now = time.time()
     if _token_cache.get('expires_at', 0) - 60 > now:
         return _token_cache['token']
 
+    # Try gh CLI first
+    oauth_token = ''
     result = subprocess.run(['gh', 'auth', 'token'], capture_output=True, text=True)
-    if result.returncode != 0:
-        raise RuntimeError(f"gh auth token failed: {result.stderr.strip()}")
-    oauth_token = result.stdout.strip()
+    if result.returncode == 0:
+        oauth_token = result.stdout.strip()
+
+    # Fallback to environment variables (GH_TOKEN, GITHUB_TOKEN, COPILOT_GITHUB_TOKEN)
     if not oauth_token:
-        raise RuntimeError("gh auth token returned empty — run: gh auth login")
+        for env_var in ('GH_TOKEN', 'GITHUB_TOKEN', 'COPILOT_GITHUB_TOKEN'):
+            val = os.environ.get(env_var, '').strip()
+            if val:
+                oauth_token = val
+                break
+
+    if not oauth_token:
+        gh_err = result.stderr.strip() if result.returncode != 0 else 'no token returned'
+        raise RuntimeError(
+            f"No GitHub auth available. "
+            f"gh auth token failed ({gh_err}). "
+            f"Set GH_TOKEN or GITHUB_TOKEN env var, or run: gh auth login"
+        )
 
     req = urllib.request.Request(
         'https://api.github.com/copilot_internal/v2/token',

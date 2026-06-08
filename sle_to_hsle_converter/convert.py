@@ -41,9 +41,9 @@ import yaml  # noqa: E402
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-from lib.analysis_parser import parse as parse_analysis
+from lib.analysis_parser import parse as parse_analysis, FileEntry
 from lib.model_builder    import create_output, apply_added, apply_removed, finalize_permissions
-from lib.merger           import three_way_merge, is_binary, get_unified_diff
+from lib.merger           import three_way_merge, patch_merge_file, is_binary, get_unified_diff
 from lib.llm_client       import llm_merge_file
 from lib.reporter         import write_report
 
@@ -364,6 +364,35 @@ def run() -> None:
                 current_path=dry_run_current,
             )
 
+        # ── Fallback A: missing file -> copy from ref_hsle/donor ──────────────
+        # If the file is absent from new_sle (missing_current) or from ref_sle
+        # (missing_ref -- can't compute ancestor), try copying from ref_hsle/donor.
+        # This handles NVL-S-specific paths absent in NVL-AX and similar cross-
+        # project scenarios where the user intentionally applies a foreign analysis.
+        if outcome in ('missing_current', 'missing_ref'):
+            fb_outcome, fb_detail = apply_added(
+                entry,
+                ref_hsle=ref_hsle, new_sle=args.sle_model, output=args.output,
+                donor=donor, conflict_policy='auto', dry_run=dry_run,
+            )
+            if fb_outcome not in ('missing_ref', 'error'):
+                outcome = fb_outcome
+                detail  = fb_detail or 'file absent from new SLE -- copied from ref_hsle'
+
+        # ── Fallback B: patch-based merge (before LLM; no auth/size limits) ───
+        # After 3-way conflict, restore the original new_sle content and attempt
+        # a unified-diff patch (fuzz=1). Works on large files; no LLM required.
+        if not dry_run and outcome in ('conflicts', 'error', 'git_unavailable', ''):
+            orig_src = os.path.join(args.sle_model, entry.rel_path)
+            dst_file  = os.path.join(args.output,   entry.rel_path)
+            if os.path.exists(orig_src) and not os.path.islink(orig_src) \
+                    and not is_binary(orig_src):
+                shutil.copy2(orig_src, dst_file)
+                outcome, detail = patch_merge_file(
+                    entry, ref_sle=ref_sle, ref_hsle=ref_hsle,
+                    output=args.output, dry_run=False,
+                )
+
         if patch_mode in ('llm', 'auto') and not dry_run:
             if outcome in ('conflicts', 'error', 'git_unavailable', ''):
                 current_path = os.path.join(args.output, entry.rel_path)
@@ -387,10 +416,12 @@ def run() -> None:
                     )
 
         icon = '✓' if outcome in (
-            'merged_clean', 'merged_smart', 'llm_merged',
-            'would_merge',  'would_smart_merge',
+            'merged_clean', 'merged_smart', 'merged_patch',
+            'llm_merged', 'applied', 'applied_from_donor', 'already_same',
+            'would_merge',  'would_smart_merge', 'would_patch',
+            'would_apply',  'would_apply_donor',
         ) else '!'
-        print(f"  {icon} {outcome:<22} {entry.rel_path}")
+        print(f"  {icon} {outcome:<24} {entry.rel_path}")
         if detail:
             print(f"      ↳ {detail}")
         results.append({
@@ -434,6 +465,7 @@ def run() -> None:
             'llm_error', 'llm_empty', 'too_large',
             'missing_ref', 'missing_current',
             'error', 'git_unavailable',
+            'merged_patch_partial',
         )
     ]
     if manual_items and not dry_run:
@@ -444,15 +476,15 @@ def run() -> None:
     # ── Final summary ─────────────────────────────────────────────────────────
     auto_count = sum(1 for r in results if r['outcome'] in (
         'applied', 'applied_from_donor', 'removed',
-        'merged_clean', 'merged_smart', 'llm_merged',
+        'merged_clean', 'merged_smart', 'merged_patch', 'llm_merged',
         'already_same', 'already_absent',
         'would_apply', 'would_apply_donor', 'would_remove',
-        'would_merge', 'would_smart_merge'))
+        'would_merge', 'would_smart_merge', 'would_patch'))
     manual_count = sum(1 for r in results if r['outcome'] in (
         'conflict', 'conflicts', 'would_conflict',
         'missing_ref', 'missing_current',
         'binary', 'error', 'git_unavailable', 'too_large',
-        'llm_error', 'llm_empty'))
+        'llm_error', 'llm_empty', 'merged_patch_partial'))
 
     print()
     print("=" * 60)
@@ -536,6 +568,15 @@ def _write_merge_todo(
                 "   content from the `<<<< new_sle` section.",
                 "4. Remove the TODO comment lines.",
                 f"5. Reference diff:  `diff {ref_sle}/{rel} {ref_hsle}/{rel}`",
+            ]
+        elif outcome == 'merged_patch_partial':
+            lines += [
+                "2. Some patch hunks were rejected (file was partially updated).",
+                "3. The successfully patched hunks are already applied.",
+                f"4. Apply the remaining hunks manually using:",
+                f"   `diff {ref_sle}/{rel} {ref_hsle}/{rel}`",
+                "5. Find sections that still differ from the HSLE reference",
+                "   and apply analogous changes.",
             ]
         elif outcome in ('llm_error', 'llm_empty', 'too_large'):
             lines += [

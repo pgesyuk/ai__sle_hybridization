@@ -15,6 +15,7 @@ On conflict or error the caller may invoke the LLM fallback in llm_client.py.
 """
 
 import os
+import re
 import stat
 import subprocess
 import tempfile
@@ -301,6 +302,13 @@ def resolve_conflict_markers(content: str, base_path: str) -> tuple[str, int]:
             # Keep both: new-SLE additions first, then HSLE additions.
             result_lines.extend(ours_lines)
             result_lines.extend(theirs_lines)
+
+        elif not (ours_stripped - base_set):
+            # Ours has no new content beyond what was already in base (it kept
+            # and/or removed base lines but added nothing independent).
+            # The HSLE change (theirs) is the intended transformation -> take it.
+            # Handles: base-line deletions by theirs, base-remnant cleanup, etc.
+            result_lines.extend(theirs_lines)
         else:
             # At least one side modified something that was in the base.
             # Cannot safely auto-resolve; emit a TODO block.
@@ -315,6 +323,148 @@ def resolve_conflict_markers(content: str, base_path: str) -> tuple[str, int]:
             result_lines.append('# >>>> end conflict')
 
     return ('\n'.join(result_lines), n_unresolved)
+
+
+def patch_merge_file(
+    entry: "FileEntry",
+    *,
+    ref_sle: str,
+    ref_hsle: str,
+    output: str,
+    dry_run: bool = True,
+) -> tuple[str, str]:
+    """
+    Apply the ref_sle->ref_hsle unified diff as a patch to output/rel_path.
+
+    Patches a temp copy of the file, validates that HSLE-unique lines appear
+    in the result, then writes to the real output only on success.
+    No LLM or gh auth required; handles large files without size limits.
+
+    Uses --fuzz=1 (conservative) for safe context matching.
+
+    Returns (outcome, detail):
+      merged_patch          -- patch applied cleanly
+      merged_patch_partial  -- some hunks rejected; rest applied; needs manual fix
+      already_same          -- ref_sle == ref_hsle or patch already applied
+      missing_ref           -- base or theirs not found
+      missing_current       -- output file missing
+      binary                -- binary file
+      error                 -- unexpected error
+    """
+    current = os.path.join(output,  entry.rel_path)
+    base    = os.path.join(ref_sle,  entry.rel_path)
+    theirs  = os.path.join(ref_hsle, entry.rel_path)
+
+    if not os.path.exists(base):
+        return ('missing_ref', f"Not found in ref_sle: {entry.rel_path}")
+    if not os.path.exists(theirs):
+        return ('missing_ref', f"Not found in ref_hsle: {entry.rel_path}")
+    if not os.path.exists(current):
+        return ('missing_current', f"Not in output tree: {entry.rel_path}")
+    if is_binary(current) or is_binary(base) or is_binary(theirs):
+        return ('binary', 'Binary file')
+
+    if dry_run:
+        return ('would_patch', '')
+
+    # Generate unified diff between ref_sle and ref_hsle
+    try:
+        diff_result = subprocess.run(
+            ['diff', '-u', base, theirs],
+            capture_output=True, text=True, timeout=30,
+        )
+    except Exception as exc:
+        return ('error', f"diff failed: {exc}")
+
+    if diff_result.returncode == 0:
+        return ('already_same', 'ref_sle == ref_hsle (no diff to apply)')
+    if diff_result.returncode < 0:
+        return ('error', f"diff error: {diff_result.stderr.strip()[:100]}")
+
+    # Work on a temp copy — never patch the live output file in place
+    tmp_current = tmp_patch = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode='wb', suffix='.merge_current', delete=False
+        ) as tf:
+            with open(current, 'rb') as src:
+                tf.write(src.read())
+            tmp_current = tf.name
+
+        with tempfile.NamedTemporaryFile(
+            mode='w', suffix='.patch', delete=False, encoding='utf-8'
+        ) as tf:
+            tf.write(diff_result.stdout)
+            tmp_patch = tf.name
+
+        result = subprocess.run(
+            ['patch', '--forward', '--fuzz=1', '--no-backup-if-mismatch',
+             tmp_current, tmp_patch],
+            capture_output=True, text=True, timeout=60,
+        )
+
+        rej_path  = tmp_current + '.rej'
+        orig_path = tmp_current + '.orig'
+        if os.path.exists(orig_path):
+            os.unlink(orig_path)
+
+        # Already-applied check
+        if 'Reversed (or previously applied)' in (result.stdout + result.stderr):
+            return ('already_same', 'patch already applied')
+
+        if result.returncode == 0:
+            with open(tmp_current, 'r', encoding='utf-8', errors='replace') as f:
+                patched_content = f.read()
+            # Validate: ensure HSLE-unique lines were not silently dropped
+            dropped = _check_hsle_drops(base, theirs, patched_content)
+            if dropped:
+                preview = repr(dropped[0])
+                extra   = f" (+{len(dropped)-1} more)" if len(dropped) > 1 else ""
+                return (
+                    'conflicts',
+                    f"patch rc=0 but {len(dropped)} HSLE line(s) missing: "
+                    f"{preview}{extra} -- escalating to LLM/manual",
+                )
+            _write_preserving_endings(current, patched_content)
+            # Preserve executable bit from theirs
+            try:
+                src_mode = os.stat(theirs).st_mode
+                if src_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH):
+                    cur_mode = os.stat(current).st_mode
+                    os.chmod(current, cur_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+            except OSError:
+                pass
+            return ('merged_patch', '')
+
+        # Partial application: some hunks rejected
+        if os.path.exists(rej_path):
+            with open(tmp_current, 'r', encoding='utf-8', errors='replace') as f:
+                patched_content = f.read()
+            _write_preserving_endings(current, patched_content)
+            with open(rej_path) as rf:
+                rej_content = rf.read()
+            os.unlink(rej_path)
+            n_failed = len(re.findall(r'^@@', rej_content, re.MULTILINE))
+            return (
+                'merged_patch_partial',
+                f"{n_failed} hunk(s) rejected -- apply manually: "
+                f"diff {base} {theirs}",
+            )
+
+        return ('conflicts', f"patch failed (rc={result.returncode}): "
+                             f"{result.stderr.strip()[:200]}")
+
+    except FileNotFoundError:
+        return ('error', '`patch` command not found in PATH')
+    except Exception as exc:
+        return ('error', str(exc))
+    finally:
+        for p in (tmp_current, tmp_patch):
+            if p:
+                try:
+                    os.unlink(p)
+                except OSError:
+                    pass
 
 
 def _check_hsle_drops(base_path: str, theirs_path: str, merged_content: str) -> list[str]:

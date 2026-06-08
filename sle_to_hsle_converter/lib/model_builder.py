@@ -185,15 +185,28 @@ def _resolve_source(
 ) -> tuple[str | None, str]:
     """
     Return (absolute_src_path, root_dir) for the best available source of rel_path.
-    Priority: donor > ref_hsle.  Returns (None, '') if neither has the file.
+    Priority: donor > ref_hsle.
+
+    Path variations tried:
+      - Exact path
+      - Cdie0TlsTb -> Cdie1TlsTb substitution (when Cdie0 not in donor/ref_hsle
+        but Cdie1 exists; both are equivalent for most files in py_lib_overrides)
+
+    Returns (None, '') if no variation is found.
     """
+    candidates = [rel_path]
+    if 'Cdie0TlsTb' in rel_path:
+        candidates.append(rel_path.replace('Cdie0TlsTb', 'Cdie1TlsTb'))
+
     if donor:
-        candidate = os.path.join(donor, rel_path)
-        if os.path.exists(candidate) or os.path.islink(candidate):
-            return candidate, donor
-    candidate = os.path.join(ref_hsle, rel_path)
-    if os.path.exists(candidate) or os.path.islink(candidate):
-        return candidate, ref_hsle
+        for rp in candidates:
+            c = os.path.join(donor, rp)
+            if os.path.exists(c) or os.path.islink(c):
+                return c, donor
+    for rp in candidates:
+        c = os.path.join(ref_hsle, rp)
+        if os.path.exists(c) or os.path.islink(c):
+            return c, ref_hsle
     return None, ''
 
 

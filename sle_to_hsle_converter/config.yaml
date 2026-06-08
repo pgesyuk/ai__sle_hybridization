@@ -27,10 +27,11 @@ patch_mode: auto
 
 # ── LLM file size limits ─────────────────────────────────────────────────────
 # Files exceeding either limit are flagged as 'too_large' and go to manual review
-# instead of being sent to the LLM.
+# instead of being sent to the LLM.  Generous limits are safe because GPT-4o
+# supports a 128K token context window (~50K chars = ~12K tokens).
 #
-llm_max_chars: 10000
-llm_max_lines: 300
+llm_max_chars: 50000
+llm_max_lines: 1500
 
 # ── Output ───────────────────────────────────────────────────────────────────
 # Stem name for the report files written into the output directory.

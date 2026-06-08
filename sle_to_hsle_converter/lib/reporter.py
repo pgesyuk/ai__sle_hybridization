@@ -8,43 +8,51 @@ from typing import List
 
 # Outcomes that require no human action
 _AUTO_OUTCOMES = frozenset({
-    'applied', 'applied_from_donor', 'removed', 'merged_clean', 'llm_merged',
-    'already_same', 'already_absent',
+    'applied', 'applied_from_donor', 'removed',
+    'merged_clean', 'merged_smart', 'merged_patch',
+    'llm_merged', 'already_same', 'already_absent',
 })
 # Outcomes that are informational non-changes
 _DRY_OUTCOMES = frozenset({
-    'would_apply', 'would_apply_donor', 'would_remove', 'would_merge', 'would_conflict',
+    'would_apply', 'would_apply_donor', 'would_remove',
+    'would_merge', 'would_smart_merge', 'would_conflict', 'would_patch',
 })
 # Outcomes that require manual review
 _MANUAL_OUTCOMES = frozenset({
     'conflict', 'conflicts', 'missing_ref', 'missing_current',
-    'binary', 'error', 'git_unavailable', 'too_large', 'llm_error', 'llm_empty',
+    'binary', 'error', 'git_unavailable', 'too_large',
+    'llm_error', 'llm_empty', 'merged_patch_partial',
 })
 
 # Confidence label per outcome
 _CONFIDENCE = {
-    'merged_clean':         'clean 3-way merge',
-    'applied':              'copied from ref_hsle',
-    'applied_from_donor':   'copied from donor model',
-    'removed':              'deleted (matched ref SLE)',
-    'llm_merged':           'LLM-assisted merge (verify!)',
-    'already_same':         'already up-to-date',
-    'already_absent':       'already absent',
-    'would_merge':          'would merge cleanly',
-    'would_apply':          'would copy from ref_hsle',
-    'would_apply_donor':    'would copy from donor model',
-    'would_remove':         'would delete',
-    'would_conflict':       'would have conflicts',
-    'conflicts':            'CONFLICT — manual review',
-    'conflict':             'CONFLICT — manual review',
-    'missing_ref':          'MISSING in ref model',
-    'missing_current':      'MISSING in output',
-    'binary':               'BINARY — manual review',
-    'too_large':            'TOO LARGE for LLM — manual review',
-    'llm_error':            'LLM ERROR — manual review',
-    'llm_empty':            'LLM empty — manual review',
-    'git_unavailable':      'git not found',
-    'error':                'ERROR',
+    'merged_clean':          'clean 3-way merge',
+    'merged_smart':          'concurrent insertions auto-resolved',
+    'merged_patch':          'patch-based merge (verify!)',
+    'applied':               'copied from ref_hsle',
+    'applied_from_donor':    'copied from donor model',
+    'removed':               'deleted (matched ref SLE)',
+    'llm_merged':            'LLM-assisted merge (verify!)',
+    'already_same':          'already up-to-date',
+    'already_absent':        'already absent',
+    'would_merge':           'would merge cleanly',
+    'would_smart_merge':     'would auto-resolve insertions',
+    'would_patch':           'would apply patch',
+    'would_apply':           'would copy from ref_hsle',
+    'would_apply_donor':     'would copy from donor model',
+    'would_remove':          'would delete',
+    'would_conflict':        'would have conflicts',
+    'merged_patch_partial':  'PARTIAL PATCH -- some hunks rejected',
+    'conflicts':             'CONFLICT -- manual review',
+    'conflict':              'CONFLICT -- manual review',
+    'missing_ref':           'MISSING in ref model',
+    'missing_current':       'MISSING in output',
+    'binary':                'BINARY -- manual review',
+    'too_large':             'TOO LARGE for LLM -- manual review',
+    'llm_error':             'LLM ERROR -- manual review',
+    'llm_empty':             'LLM empty -- manual review',
+    'git_unavailable':       'git not found',
+    'error':                 'ERROR',
 }
 
 
