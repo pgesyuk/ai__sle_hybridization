@@ -3,14 +3,14 @@ llm_client.py — GitHub Copilot Chat API client for HSLE converter LLM fallback
 
 Token resolution order (first success wins):
   1. In-process cache (valid for ~28 min)
-  2. ``gh auth token`` CLI
+  2. ``gh api /copilot_internal/v2/token``  — uses gh CLI's own Copilot-scoped auth
   3. GH_TOKEN / GITHUB_TOKEN / COPILOT_GITHUB_TOKEN environment variables
   4. Persistent token file  ~/.sle_hsle_token
-  5. Interactive prompt (getpass) — with save option for future runs
+  5. Interactive prompt — with save option for future runs
 
-If the Copilot exchange fails with 401/403, the stored token is cleared and
-the user is re-prompted (once) so an expired token does not silently block
-all LLM merges for the remainder of the run.
+Strategy: gh CLI holds a device-flow token with the 'copilot' OAuth scope.
+Classic PATs cannot request that scope, so they get HTTP 404 on the exchange
+endpoint.  By trying ``gh api`` first we avoid the PAT limitation entirely.
 """
 
 import json
@@ -89,12 +89,15 @@ def _prompt_for_token(reason: str = '') -> str:
     if reason:
         print(f"  Reason: {reason}")
     print()
-    print("  A GitHub Personal Access Token (classic) is needed to call")
+    print("  A GitHub token with the 'copilot' OAuth scope is needed to call")
     print("  the GitHub Copilot Chat API for intelligent file merging.")
     print()
-    print("  How to create one:")
-    print("    https://github.com/settings/tokens  -> Generate new token (classic)")
-    print("    Required scope: 'repo'  (account must have Copilot access)")
+    print("  Easiest: run  gh auth login  then re-run the converter.")
+    print("  The converter will call 'gh api' automatically — no token entry needed.")
+    print()
+    print("  If gh CLI is unavailable, provide the token printed by:")
+    print("    gh auth token")
+    print("  (device-flow tokens have the 'copilot' scope; classic PATs do NOT)")
     print()
     print("  The token will be saved to:", _TOKEN_FILE, "(mode 0600)")
     print("  Note: token will be visible as you type/paste -- clear screen after.")
@@ -115,9 +118,38 @@ def _prompt_for_token(reason: str = '') -> str:
 #  Copilot token exchange
 # --------------------------------------------------------------------------- #
 
+def _exchange_via_gh_cli() -> dict:
+    """
+    Use ``gh api /copilot_internal/v2/token`` to obtain a short-lived Copilot
+    token.  This leverages gh CLI's own device-flow OAuth token which already
+    carries the 'copilot' scope — classic PATs cannot get that scope and will
+    receive HTTP 404 when hitting the endpoint directly.
+
+    Returns the response dict, or raises RuntimeError on failure.
+    """
+    try:
+        result = subprocess.run(
+            ['gh', 'api', '/copilot_internal/v2/token'],
+            capture_output=True, text=True, timeout=15,
+        )
+        if result.returncode == 0:
+            return json.loads(result.stdout)
+        raise RuntimeError(
+            f"gh api copilot exchange failed (exit {result.returncode}): "
+            f"{result.stderr.strip()[:200]}"
+        )
+    except FileNotFoundError:
+        raise RuntimeError("gh CLI not found")
+    except subprocess.TimeoutExpired:
+        raise RuntimeError("gh CLI timed out")
+
+
 def _exchange(oauth_token: str) -> dict:
     """
-    Exchange an OAuth token for a short-lived Copilot API token.
+    Exchange an OAuth token for a short-lived Copilot API token via direct
+    HTTP.  Requires the token to have the 'copilot' OAuth scope (device-flow
+    tokens only — classic PATs will get HTTP 404).
+
     Returns the full response dict (contains 'token' and 'expires_at').
     Raises RuntimeError on HTTP error.
     """
@@ -133,6 +165,13 @@ def _exchange(oauth_token: str) -> dict:
             return json.loads(resp.read())
     except urllib.error.HTTPError as exc:
         body = exc.read().decode(errors='replace')
+        if exc.code == 404:
+            raise RuntimeError(
+                f"Copilot token exchange HTTP 404 -- the token lacks the 'copilot' "
+                f"OAuth scope.  Classic PATs cannot get this scope.  Use a token "
+                f"created via device-flow (e.g. gh auth login), or set GH_TOKEN to "
+                f"the token reported by 'gh auth token'."
+            )
         raise RuntimeError(
             f"Copilot token exchange failed (HTTP {exc.code}): {body[:200]}"
         )
@@ -165,13 +204,15 @@ def get_copilot_token() -> str:
 
     Full resolution order:
       1. In-process Copilot-token cache (still valid)
-      2. gh auth token CLI
+      2. gh api /copilot_internal/v2/token  (gh CLI's device-flow token has Copilot scope)
       3. GH_TOKEN / GITHUB_TOKEN / COPILOT_GITHUB_TOKEN environment variables
       4. Persistent token file  ~/.sle_hsle_token
-      5. Interactive getpass prompt  (saves token to file on success)
+      5. Interactive prompt  (saves token to file on success)
 
     If the Copilot exchange fails (HTTP 401/403), the token is assumed expired:
     the file and cache are cleared and the user is prompted once more.
+    A 404 always means the token lacks the 'copilot' scope — the prompt message
+    explains this and suggests using 'gh auth token' output.
     """
     now = time.time()
 
@@ -179,26 +220,24 @@ def get_copilot_token() -> str:
     if _token_cache.get('expires_at', 0) - 60 > now:
         return _token_cache['token']
 
-    # Collect OAuth token candidates
+    # 2. gh CLI device-flow token (has 'copilot' scope — classic PATs do not)
+    try:
+        data = _exchange_via_gh_cli()
+        _token_cache['token']      = data['token']
+        _token_cache['expires_at'] = data.get('expires_at', now + 1700)
+        return _token_cache['token']
+    except RuntimeError:
+        pass  # gh not available or not logged in — fall through to PAT flow
+
+    # PAT-based flow (steps 3–5)
     oauth_token = ''
 
-    # 2. gh CLI
-    try:
-        result = subprocess.run(
-            ['gh', 'auth', 'token'], capture_output=True, text=True, timeout=5
-        )
-        if result.returncode == 0:
-            oauth_token = result.stdout.strip()
-    except Exception:
-        pass
-
     # 3. Environment variables
-    if not oauth_token:
-        for env_var in ('GH_TOKEN', 'GITHUB_TOKEN', 'COPILOT_GITHUB_TOKEN'):
-            val = os.environ.get(env_var, '').strip()
-            if val:
-                oauth_token = val
-                break
+    for env_var in ('GH_TOKEN', 'GITHUB_TOKEN', 'COPILOT_GITHUB_TOKEN'):
+        val = os.environ.get(env_var, '').strip()
+        if val:
+            oauth_token = val
+            break
 
     # 4. Persistent token file
     if not oauth_token:
@@ -229,8 +268,8 @@ def get_copilot_token() -> str:
             return _token_cache['token']
         except RuntimeError as exc:
             err = str(exc)
-            if ('401' in err or '403' in err or '404' in err) and attempt == 0 and not prompted:
-                # Stored/env/cached token expired — clear it and ask the user once
+            if ('401' in err or '403' in err) and attempt == 0 and not prompted:
+                # Stored/env token expired — clear it and ask the user once
                 _clear_stored_token()
                 _token_cache.clear()
                 reason = "Stored token expired or lacks Copilot access"
