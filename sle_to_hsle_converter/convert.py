@@ -415,6 +415,20 @@ def run() -> None:
                         max_lines=llm_max_lines,
                     )
 
+        # ── Fallback C: copy from donor when LLM unavailable ────────────────
+        # If every deterministic method and LLM all failed, use the donor HSLE
+        # file as a last resort.  It may need project-specific adaptations but
+        # is a valid HSLE starting point and avoids leaving conflict markers.
+        if outcome in ('llm_error', 'llm_empty', 'too_large', 'conflicts',
+                       'error', 'git_unavailable') and donor and not dry_run:
+            donor_file = os.path.join(donor, entry.rel_path)
+            dst_file   = os.path.join(args.output, entry.rel_path)
+            if os.path.exists(donor_file) and not is_binary(donor_file):
+                shutil.copy2(donor_file, dst_file)
+                outcome = 'copied_from_donor'
+                detail  = ('LLM unavailable — donor HSLE file used as starting point; '
+                           'review for project-specific adaptations')
+
         icon = '✓' if outcome in (
             'merged_clean', 'merged_smart', 'merged_patch',
             'llm_merged', 'applied', 'applied_from_donor', 'already_same',
@@ -583,6 +597,14 @@ def _write_merge_todo(
                 "2. LLM was unavailable; the file still needs HSLE changes.",
                 f"3. Reference diff:  `diff {ref_sle}/{rel} {ref_hsle}/{rel}`",
                 "4. Apply the analogous changes to the output file.",
+            ]
+        elif outcome == 'copied_from_donor':
+            lines += [
+                "2. The donor HSLE file was used as a last-resort starting point.",
+                "3. Review the file for project-specific paths, names, or IPs",
+                "   that differ between the donor project and this project.",
+                f"4. Reference (donor):  `{ref_hsle}/{rel}`",
+                f"5. Reference diff:     `diff {ref_sle}/{rel} {ref_hsle}/{rel}`",
             ]
         elif outcome in ('missing_ref',):
             lines += [

@@ -22,6 +22,7 @@ _MANUAL_OUTCOMES = frozenset({
     'conflict', 'conflicts', 'missing_ref', 'missing_current',
     'binary', 'error', 'git_unavailable', 'too_large',
     'llm_error', 'llm_empty', 'merged_patch_partial',
+    'copied_from_donor',   # donor used as last-resort — needs project-specific review
 })
 
 # Confidence label per outcome
@@ -43,6 +44,7 @@ _CONFIDENCE = {
     'would_remove':          'would delete',
     'would_conflict':        'would have conflicts',
     'merged_patch_partial':  'PARTIAL PATCH -- some hunks rejected',
+    'copied_from_donor':     'DONOR COPY -- review project-specific adaptations',
     'conflicts':             'CONFLICT -- manual review',
     'conflict':              'CONFLICT -- manual review',
     'missing_ref':           'MISSING in ref model',
