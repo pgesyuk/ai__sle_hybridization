@@ -13,7 +13,6 @@ the user is re-prompted (once) so an expired token does not silently block
 all LLM merges for the remainder of the run.
 """
 
-import getpass
 import json
 import os
 import stat
@@ -69,12 +68,13 @@ def _prompt_for_token(reason: str = '') -> str:
     """
     Ask the user for a GitHub personal access token interactively.
 
-    Prints a short explanation, then uses getpass to read the token without
-    echoing it to the terminal.  If stdin is not a tty (pipe / batch mode),
-    raises RuntimeError instead of blocking.
+    Reads using input() (token visible on screen) rather than getpass because
+    getpass opens /dev/tty in noecho mode, which silently drops pasted text on
+    many Intel/enterprise terminal emulators.
 
-    Returns the entered token (stripped), or raises RuntimeError if the user
-    presses Ctrl-C or leaves the input empty.
+    If stdin is not a tty (pipe / batch mode), raises RuntimeError instead of
+    blocking.  Returns the entered token (stripped), or raises RuntimeError if
+    the user presses Ctrl-C or leaves the input empty.
     """
     if not sys.stdin.isatty():
         raise RuntimeError(
@@ -93,16 +93,15 @@ def _prompt_for_token(reason: str = '') -> str:
     print("  the GitHub Copilot Chat API for intelligent file merging.")
     print()
     print("  How to create one:")
-    print("    1. https://github.com/settings/tokens")
-    print("    2. Generate new token (classic)")
-    print("    3. Scopes: 'repo' + ensure your account has Copilot access")
+    print("    https://github.com/settings/tokens  -> Generate new token (classic)")
+    print("    Required scope: 'repo'  (account must have Copilot access)")
     print()
-    print("  The token will be saved to:", _TOKEN_FILE)
-    print("  (owner read-only, mode 0600)")
+    print("  The token will be saved to:", _TOKEN_FILE, "(mode 0600)")
+    print("  Note: token will be visible as you type/paste -- clear screen after.")
     print("=" * 60)
 
     try:
-        token = getpass.getpass("  GitHub token (paste, then Enter): ").strip()
+        token = input("  GitHub token: ").strip()
     except (KeyboardInterrupt, EOFError):
         print()
         raise RuntimeError("Token entry cancelled by user")
