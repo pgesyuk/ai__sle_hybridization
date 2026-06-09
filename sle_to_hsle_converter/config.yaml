@@ -49,6 +49,9 @@ merge_hints: |
   In NBCLASS / CLASS_ assignments keep SLES12 (not SLES11).
   For simics_path in .cth files use /p/hdk/cad/windriver/simics/toolversion(simics)
   (standard CTH toolversion lookup); use cth_query-based SIMICS_HOME in Makefiles.
+  For scripts/soc_moab.py: use the HSLE/donor version — keep the GCD softlink
+  block (gcdu/gcds/gcdp loop) UNCOMMENTED and active; use is_line_empty as
+  exact match (line == '') not strip-based (line.strip() == '').
 
 # ── Output ───────────────────────────────────────────────────────────────────
 # Stem name for the report files written into the output directory.
