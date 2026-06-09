@@ -263,6 +263,7 @@ def run() -> None:
     merge_hints     = cfg.get('merge_hints', '')
     report_name     = cfg.get('report_name', 'conversion_report')
     output_group    = cfg.get('output_group', 'soc')
+    file_overrides  = cfg.get('file_overrides', {})   # {rel_path: abs_src_path}
 
     # ── Banner ───────────────────────────────────────────────────────────────
     print("=" * 60)
@@ -496,7 +497,22 @@ def run() -> None:
             'description': entry.description,
         })
 
-    # ── Step 5b: Finalize permissions ─────────────────────────────────────────
+    # ── Step 5b (overrides): Copy verbatim file overrides ─────────────────────
+    if file_overrides and not dry_run and os.path.isdir(args.output):
+        print(f"\n[5b/6] Applying {len(file_overrides)} file override(s)...")
+        for rel_path, src_path in file_overrides.items():
+            dst = os.path.join(args.output, rel_path)
+            if not os.path.isfile(src_path):
+                print(f"  ! override_missing     {rel_path}")
+                print(f"      ↳ source not found: {src_path}")
+                continue
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            shutil.copy2(src_path, dst)
+            os.chmod(dst, os.stat(dst).st_mode | stat.S_IWUSR)
+            print(f"  ✓ override_applied     {rel_path}")
+            print(f"      ↳ from: {src_path}")
+
+    # ── Step 5c: Finalize permissions ─────────────────────────────────────────
     if not dry_run and os.path.isdir(args.output):
         # Safety sweep: remove any GK4-integration symlinks that apply_added /
         # apply_modified may have (re)created from stale donor models built before

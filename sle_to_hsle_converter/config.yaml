@@ -53,6 +53,12 @@ merge_hints: |
   block (gcdu/gcds/gcdp loop) UNCOMMENTED and active; use is_line_empty as
   exact match (line == '') not strip-based (line.strip() == '').
 
+# Files to copy verbatim into the output model, bypassing merge entirely.
+# Keys are relative paths inside the output model; values are absolute source
+# paths.  Applied after all ADDED/MODIFIED/REMOVED steps, so they always win.
+file_overrides:
+  scripts/soc_moab.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/hybridization/src_donor_models/pkg-nvlpkg-a0-1p0-c.14d_h.14g_p.07_p.11_sle_hsle.8_rtl_core_pm_co/scripts/soc_moab.py
+
 # ── Output ───────────────────────────────────────────────────────────────────
 # Stem name for the report files written into the output directory.
 report_name: conversion_report
