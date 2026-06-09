@@ -43,7 +43,8 @@ import yaml  # noqa: E402
 sys.path.insert(0, os.path.dirname(__file__))
 
 from lib.analysis_parser import parse as parse_analysis, FileEntry
-from lib.model_builder    import create_output, apply_added, apply_removed, finalize_permissions
+from lib.model_builder    import (create_output, apply_added, apply_removed,
+                                  finalize_permissions, _dereference_file_symlinks)
 from lib.merger           import three_way_merge, patch_merge_file, is_binary, get_unified_diff
 from lib.llm_client       import llm_merge_file
 from lib.reporter         import write_report
@@ -497,6 +498,12 @@ def run() -> None:
 
     # ── Step 5b: Finalize permissions ─────────────────────────────────────────
     if not dry_run and os.path.isdir(args.output):
+        # Safety sweep: remove any GK4-integration symlinks that apply_added /
+        # apply_modified may have (re)created from stale donor models built before
+        # the GK4-deletion fix was applied.  This ensures build-time-generated
+        # files (e.g. cfg/nvlsi7_n2p.design.cfg) are always absent from the
+        # output so the HSLE build can regenerate them from .mako templates.
+        _dereference_file_symlinks(args.output)
         perm_warnings = finalize_permissions(args.output, group=output_group)
         if perm_warnings:
             for w in perm_warnings:
