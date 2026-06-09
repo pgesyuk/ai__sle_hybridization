@@ -5,7 +5,7 @@
 
   SLE  model : sle_emu-nvlax-a0-26ww12a_co
   HSLE model : sle_emu-nvlax-a0-26ww12a_hsle_v07_cores__msr_co
-  Base path  : /nfs/site/disks/ive_nvl_efs_pgesyuk_001/hybridization/src_models/
+  Base path  : /nfs/site/disks/ive_nvl_efs_pgesyuk_001/hybridization/src_donor_models/
 
   Total differences: 104 entries (39 added, 65 modified)
   All file paths are relative to the model root folder.

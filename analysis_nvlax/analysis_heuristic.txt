@@ -3,8 +3,8 @@
   Generated: 2026-06-02 23:39  |  Mode: heuristic
 ================================================================================
 
-  SLE path : /nfs/site/disks/ive_nvl_efs_pgesyuk_001/hybridization/src_models/sle_emu-nvlax-a0-26ww12a_co
-  HSLE path : /nfs/site/disks/ive_nvl_efs_pgesyuk_001/hybridization/src_models/sle_emu-nvlax-a0-26ww12a_hsle_v07_cores__msr_co
+  SLE path : /nfs/site/disks/ive_nvl_efs_pgesyuk_001/hybridization/src_donor_models/sle_emu-nvlax-a0-26ww12a_co
+  HSLE path : /nfs/site/disks/ive_nvl_efs_pgesyuk_001/hybridization/src_donor_models/sle_emu-nvlax-a0-26ww12a_hsle_v07_cores__msr_co
 
   Total differences : 212  (144 added, 65 modified, 3 removed)
 
