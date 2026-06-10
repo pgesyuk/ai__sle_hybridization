@@ -19,7 +19,7 @@ def get_list_of_files_in_dir(dir, filter="*", basename=1):
 def get_dut_list(workarea):
     dut_list = []
     file_list = get_list_of_files_in_dir(dir=os.path.join(workarea, "cfg"), filter="*.design.cfg", basename=1)
-    for file in file_list:
+    for file in file_list: 
         dut_list.append(file.replace('.design.cfg', ''))
     return dut_list
 
@@ -32,7 +32,7 @@ def is_line_comment(line):
     return re.search('^\s*\/\/', line)
 
 def is_line_empty(line):
-    return line == ''
+    return line.strip() == ''
 
 #######################################################################
 
@@ -42,12 +42,6 @@ if not workarea:
 
 dut_list = get_dut_list(workarea)
 soc_list = get_soc_file_list(workarea)
-
-# GCD paths are only present in certain DUTs (e.g. nvlsi7); initialise to
-# None so the cross-DUT GCD hack below is safely skipped when absent.
-gcdu_path = None
-gcds_path = None
-gcdp_path = None
 
 for dut in dut_list:
     print(f"Populating SOC softlink for {dut}")
@@ -85,20 +79,27 @@ for dut in dut_list:
                     cdie_path = os.path.join(workarea, "soc", dut, f"{cdie_match.group(0)}")
                     try: os.unlink(cdie_path)
                     except FileNotFoundError: os.symlink(soc_path, cdie_path)
-
+ 
 ##FIXME SPECIAL HACK FOR GCD ON OTHER DUT AS GCD ONLY APPEAR IN NVLSI7
-for dut in dut_list:
-    if gcdu_path is not None:
-        soc_path = os.path.join(workarea, "soc", dut, "gcdu")
-        if not os.path.islink(soc_path):
-            os.symlink(gcdu_path, soc_path)
-    if gcds_path is not None:
-        soc_path = os.path.join(workarea, "soc", dut, "gcds")
-        if not os.path.islink(soc_path):
-            os.symlink(gcds_path, soc_path)
-    if gcdp_path is not None:
-        soc_path = os.path.join(workarea, "soc", dut, "gcdp")
-        if not os.path.islink(soc_path):
-            os.symlink(gcdp_path, soc_path)
+#for dut in dut_list:
+    #soc_path = os.path.join(workarea, "soc", dut, "gcdu")
+    #if not os.path.islink(soc_path):
+    #    os.symlink(gcdu_path, soc_path)
+    #soc_path = os.path.join(workarea, "soc", dut, "gcds")
+    #if not os.path.islink(soc_path):
+    #   os.symlink(gcds_path, soc_path)
+    #soc_path = os.path.join(workarea, "soc", dut, "gcdp")
+    #if not os.path.islink(soc_path):
+    #    os.symlink(gcdp_path, soc_path)
 
 print("Updating Done")
+
+
+
+
+
+
+
+
+
+
