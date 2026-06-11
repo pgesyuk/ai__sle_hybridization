@@ -292,7 +292,7 @@ def run() -> None:
     # Auto-generated directories/paths: never touched by the converter.
     # These files are regenerated during compilation and must not be
     # overwritten, deleted, or merged.
-    _AUTOGEN_PREFIXES = ('filelists/', 'output/', '.grdlbuild_logs/', 'soc/')
+    _AUTOGEN_PREFIXES = ('filelists/', 'output/', '.grdlbuild_logs/', 'soc/', 'subip/')
     # PCD compiled-output overrides: files inside PCD_WORKAREA whose path
     # contains 'PCD_WORKAREA/' followed by a segment with 'pchlp/output/'.
     # gen_overrides.py tries to push them to the read-only integration area
