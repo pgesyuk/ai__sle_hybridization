@@ -56,8 +56,9 @@ merge_hints: |
 # Files to copy verbatim into the output model, bypassing merge entirely.
 # Keys are relative paths inside the output model; values are absolute source
 # paths.  Applied after all ADDED/MODIFIED/REMOVED steps, so they always win.
-file_overrides:
-  scripts/soc_moab.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/hybridization/sle_to_hsle_converter/assets/scripts/soc_moab.py
+# Note: files under assets/ are applied automatically without needing an entry
+# here — add project-specific one-off overrides here only.
+file_overrides: {}
 
 # ── Output ───────────────────────────────────────────────────────────────────
 # Stem name for the report files written into the output directory.

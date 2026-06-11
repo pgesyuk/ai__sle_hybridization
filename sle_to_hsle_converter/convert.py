@@ -497,9 +497,10 @@ def run() -> None:
             'description': entry.description,
         })
 
-    # ── Step 5b (overrides): Copy verbatim file overrides ─────────────────────
+    # ── Step 5b (overrides): config file_overrides + built-in assets overlay ──
+    # Part 1: project-specific overrides from config.yaml file_overrides dict
     if file_overrides and not dry_run and os.path.isdir(args.output):
-        print(f"\n[5b/6] Applying {len(file_overrides)} file override(s)...")
+        print(f"\n[5b/6] Applying {len(file_overrides)} config file override(s)...")
         for rel_path, src_path in file_overrides.items():
             dst = os.path.join(args.output, rel_path)
             if not os.path.isfile(src_path):
@@ -511,6 +512,26 @@ def run() -> None:
             os.chmod(dst, os.stat(dst).st_mode | stat.S_IWUSR)
             print(f"  ✓ override_applied     {rel_path}")
             print(f"      ↳ from: {src_path}")
+
+    # Part 2: built-in assets overlay — files under assets/ ship WITH the
+    # converter and are always applied to the output model using the same
+    # relative path (assets/scripts/foo -> output/scripts/foo).
+    # No config needed; just drop files into assets/ to include them.
+    assets_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
+    if os.path.isdir(assets_dir) and not dry_run and os.path.isdir(args.output):
+        asset_files = []
+        for dirpath, _, files in os.walk(assets_dir):
+            for fname in files:
+                asset_files.append(os.path.join(dirpath, fname))
+        if asset_files:
+            print(f"\n[5b/6] Applying {len(asset_files)} built-in asset(s) from assets/...")
+        for src_path in asset_files:
+            rel_path = os.path.relpath(src_path, assets_dir)
+            dst = os.path.join(args.output, rel_path)
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            shutil.copy2(src_path, dst)
+            os.chmod(dst, os.stat(dst).st_mode | stat.S_IWUSR)
+            print(f"  ✓ asset_applied        {rel_path}")
 
     # ── Step 5c: Finalize permissions ─────────────────────────────────────────
     if not dry_run and os.path.isdir(args.output):
