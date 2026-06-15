@@ -28,7 +28,7 @@ from .analysis_parser import FileEntry
 
 # Top-level directories in a model that are compilation outputs and must never
 # be copied into the converted HSLE model.
-_COMPILE_OUTPUT_DIRS = frozenset({'output', '.grdlbuild_logs', 'soc', 'subip'})
+_COMPILE_OUTPUT_DIRS = frozenset({'output', '.grdlbuild_logs', 'soc', 'subip', 'codegen'})
 
 
 def create_output(new_sle: str, output: str) -> None:
