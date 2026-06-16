@@ -239,28 +239,15 @@ def _resolve_source(
 ) -> tuple[str | None, str]:
     """
     Return (absolute_src_path, root_dir) for the best available source of rel_path.
-    Priority: donor > ref_hsle.
-
-    Path variations tried:
-      - Exact path
-      - Cdie0TlsTb -> Cdie1TlsTb substitution (when Cdie0 not in donor/ref_hsle
-        but Cdie1 exists; both are equivalent for most files in py_lib_overrides)
-
-    Returns (None, '') if no variation is found.
+    Priority: donor > ref_hsle.  Returns (None, '') if neither has the file.
     """
-    candidates = [rel_path]
-    if 'Cdie0TlsTb' in rel_path:
-        candidates.append(rel_path.replace('Cdie0TlsTb', 'Cdie1TlsTb'))
-
     if donor:
-        for rp in candidates:
-            c = os.path.join(donor, rp)
-            if os.path.exists(c) or os.path.islink(c):
-                return c, donor
-    for rp in candidates:
-        c = os.path.join(ref_hsle, rp)
-        if os.path.exists(c) or os.path.islink(c):
-            return c, ref_hsle
+        candidate = os.path.join(donor, rel_path)
+        if os.path.exists(candidate) or os.path.islink(candidate):
+            return candidate, donor
+    candidate = os.path.join(ref_hsle, rel_path)
+    if os.path.exists(candidate) or os.path.islink(candidate):
+        return candidate, ref_hsle
     return None, ''
 
 
@@ -409,19 +396,16 @@ def _remove_pcd_compiled_overrides(output_root: str) -> list[str]:
     """
     removed: list[str] = []
     for dirpath, _dirs, files in os.walk(output_root):
-        # Only act inside a PCD_WORKAREA subtree
         norm = dirpath if dirpath.endswith(os.sep) else dirpath + os.sep
         if _PCD_WORKAREA not in norm:
             continue
 
-        # Locate the portion of the path after PCD_WORKAREA/
         idx = norm.find(_PCD_WORKAREA) + len(_PCD_WORKAREA)
         rel_in_workarea = norm[idx:]
 
         if _PCD_COMPILED_OUTPUT_MARKER not in rel_in_workarea:
             continue
 
-        # This directory is inside a pchlp/output/ tree — remove all files here
         for name in files:
             p = os.path.join(dirpath, name)
             if os.path.islink(p):
