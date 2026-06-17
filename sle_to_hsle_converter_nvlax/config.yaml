@@ -92,6 +92,27 @@ path_remaps:
   - from: "src/val/emu/rtlchanges/soc/nvlsi7/cdie1/"
     to:   "src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/"
 
+# ── Content patches ───────────────────────────────────────────────────────────
+# Bulk text substitution sweep over output files matching a path prefix.
+# Applied after all ADDED/MODIFIED/REMOVED steps, file_overrides, line_patches.
+# Binary files are always skipped.
+#
+# Fields:
+#   path_pattern   path prefix relative to output root (leave empty to match all)
+#   substitutions  list of {match, replace} pairs (plain string replacement)
+#   reason         human-readable note logged during conversion
+#
+content_patches:
+  # NVL-AX is single-die n2p (cdie0 only).  NVL-S ADDED/MODIFIED files that
+  # come from the NVL-S analysis reference cdie1 in their content; replace
+  # everywhere under src/val/emu/ so RTL, Python, TCL and config files are
+  # all consistent with the NVL-AX die topology.
+  - path_pattern: "src/val/emu/"
+    substitutions:
+      - match:   "cdie1"
+        replace: "cdie0"
+    reason: "NVL-AX is n2p single-die — replace cdie1 with cdie0 in all emu val files"
+
 # ── Output ───────────────────────────────────────────────────────────────────
 # Stem name for the report files written into the output directory.
 report_name: conversion_report

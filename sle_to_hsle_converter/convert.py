@@ -266,6 +266,7 @@ def run() -> None:
     file_overrides  = cfg.get('file_overrides', {})   # {rel_path: abs_src_path}
     _path_remaps    = cfg.get('path_remaps', [])       # [{from: X, to: Y}, ...]
     _line_patches   = cfg.get('line_patches', [])      # [{file, match, action, comment_char, reason}]
+    _content_patches = cfg.get('content_patches', []) # [{path_pattern, substitutions: [{match, replace}], reason}]
 
     # ── Banner ───────────────────────────────────────────────────────────────
     print("=" * 60)
@@ -618,7 +619,46 @@ def run() -> None:
             else:
                 print(f"  ~ line_patch_no_match  {rel_path} (pattern not found or already patched)")
 
-    # ── Step 5d: Finalize permissions ─────────────────────────────────────────
+    # ── Step 5d: Content patches ──────────────────────────────────────────────
+    # Bulk text substitution sweep over output files matching a path prefix.
+    # Useful for replacing die/variant names in file contents (e.g. cdie1→cdie0).
+    # Binary files are skipped automatically.
+    if _content_patches and not dry_run and os.path.isdir(args.output):
+        print(f"\n[5d/6] Applying {len(_content_patches)} content patch set(s)...")
+        for cp in _content_patches:
+            path_pat = cp.get('path_pattern', '')
+            subs     = cp.get('substitutions', [])
+            reason   = cp.get('reason', '')
+            if not subs:
+                continue
+            files_changed = 0
+            files_scanned = 0
+            for dirpath, _, fnames in os.walk(args.output):
+                for fname in fnames:
+                    fpath = os.path.join(dirpath, fname)
+                    rel   = os.path.relpath(fpath, args.output)
+                    if path_pat and not rel.startswith(path_pat):
+                        continue
+                    if is_binary(fpath):
+                        continue
+                    files_scanned += 1
+                    try:
+                        content = open(fpath, 'r', errors='replace').read()
+                    except OSError:
+                        continue
+                    new_content = content
+                    for sub in subs:
+                        new_content = new_content.replace(sub.get('match', ''), sub.get('replace', ''))
+                    if new_content != content:
+                        os.chmod(fpath, os.stat(fpath).st_mode | stat.S_IWUSR)
+                        open(fpath, 'w').write(new_content)
+                        files_changed += 1
+            label = path_pat or '(all files)'
+            print(f"  ✓ content_patch        {label}  scanned={files_scanned} changed={files_changed}")
+            if reason:
+                print(f"      ↳ {reason}")
+
+    # ── Step 5e: Finalize permissions ─────────────────────────────────────────
     if not dry_run and os.path.isdir(args.output):
         # Safety sweep: remove any GK4-integration symlinks that apply_added /
         # apply_modified may have (re)created from stale donor models built before
