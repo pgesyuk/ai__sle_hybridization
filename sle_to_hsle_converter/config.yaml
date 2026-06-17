@@ -78,13 +78,6 @@ line_patches:
     comment_char: "#"
     reason:       "zebu_libstdc_override plugin causes collisions in Simics7 environment"
 
-  - file:         cfg/trex/emulation_TREX.pm
-    match:        'my $cmd = "ssh -x rsync.'
-    action:       replace_line
-    replacement: |
-      my $cmd = "ssh -x rsync.${site}.intel.com \"wash -n `groups` -c 'ls -d $ENV{WORKAREA}'\"";
-    reason:       "Use wash-based ssh cmd format required for Simics7 environment"
-
 # ── Output ───────────────────────────────────────────────────────────────────
 # Stem name for the report files written into the output directory.
 report_name: conversion_report
