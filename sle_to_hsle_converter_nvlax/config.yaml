@@ -111,7 +111,12 @@ content_patches:
     substitutions:
       - match:   "cdie1"
         replace: "cdie0"
-    reason: "NVL-AX is n2p single-die — replace cdie1 with cdie0 in all emu val files"
+      # After cdie1→cdie0 runs, all cdie?pkg refs are cdie0pkg.
+      # NVL-AX n2p has a single die named cdiepkg (not cdie0pkg/cdie1pkg).
+      # e.g. tb_top.pkg.cdie0pkg.cdie... → tb_top.pkg.cdiepkg.cdie...
+      - match:   "cdie0pkg"
+        replace: "cdiepkg"
+    reason: "NVL-AX is n2p single-die — replace cdie1→cdie0 and cdie0pkg→cdiepkg in all emu val files"
 
 # ── Output ───────────────────────────────────────────────────────────────────
 # Stem name for the report files written into the output directory.
