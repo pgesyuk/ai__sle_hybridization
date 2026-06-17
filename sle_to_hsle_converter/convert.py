@@ -571,7 +571,7 @@ def run() -> None:
             print(f"  ✓ asset_applied        {rel_path}")
 
     # ── Step 5c: Line patches ─────────────────────────────────────────────────
-    # comment_out specific lines in output files as configured in line_patches.
+    # comment_out or replace_line specific lines as configured in line_patches.
     if _line_patches and not dry_run and os.path.isdir(args.output):
         print(f"\n[5c/6] Applying {len(_line_patches)} line patch(es)...")
         for patch in _line_patches:
@@ -579,6 +579,7 @@ def run() -> None:
             match_str    = patch.get('match', '')
             action       = patch.get('action', 'comment_out')
             comment_char = patch.get('comment_char', '#')
+            replacement  = patch.get('replacement', '').rstrip('\n')
             reason       = patch.get('reason', '')
             if not rel_path or not match_str:
                 print(f"  ! line_patch_invalid   (missing file or match field)")
@@ -591,19 +592,31 @@ def run() -> None:
             patched = []
             count = 0
             for line in lines:
-                if action == 'comment_out' and match_str in line and not line.lstrip().startswith(comment_char):
-                    patched.append(f"{comment_char} [converter] {line.rstrip()}\n")
-                    count += 1
+                if match_str in line:
+                    if action == 'comment_out' and not line.lstrip().startswith(comment_char):
+                        patched.append(f"{comment_char} [converter] {line.rstrip()}\n")
+                        count += 1
+                    elif action == 'replace_line' and replacement:
+                        indent = len(line) - len(line.lstrip())
+                        new_line = ' ' * indent + replacement.lstrip() + '\n'
+                        if new_line != line:
+                            patched.append(new_line)
+                            count += 1
+                        else:
+                            patched.append(line)  # already correct
+                    else:
+                        patched.append(line)
                 else:
                     patched.append(line)
             if count:
                 os.chmod(target, os.stat(target).st_mode | stat.S_IWUSR)
                 open(target, 'w').writelines(patched)
-                print(f"  ✓ line_patch_applied   {rel_path} ({count} line(s) commented)")
+                verb = 'replaced' if action == 'replace_line' else 'commented'
+                print(f"  ✓ line_patch_applied   {rel_path} ({count} line(s) {verb})")
                 if reason:
                     print(f"      ↳ reason: {reason}")
             else:
-                print(f"  ~ line_patch_no_match  {rel_path} (pattern not found — already patched?)")
+                print(f"  ~ line_patch_no_match  {rel_path} (pattern not found or already patched)")
 
     # ── Step 5d: Finalize permissions ─────────────────────────────────────────
     if not dry_run and os.path.isdir(args.output):
