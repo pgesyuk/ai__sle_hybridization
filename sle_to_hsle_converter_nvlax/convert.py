@@ -144,6 +144,7 @@ def run() -> None:
     report_name         = cfg.get('report_name', 'conversion_report')
     file_overrides      = cfg.get('file_overrides', {})   # {rel_path: abs_src_path}
     _path_remaps        = cfg.get('path_remaps', [])       # [{from: X, to: Y}, ...]
+    _line_patches       = cfg.get('line_patches', [])      # [{file, match, action, comment_char, reason}]
 
     print("=" * 60)
     print("  HSLE Converter Agent")
@@ -408,7 +409,42 @@ def run() -> None:
             os.chmod(dst, os.stat(dst).st_mode | stat.S_IWUSR)
             print(f"  ✓ asset_applied        {rel_path}")
 
-    # ── Step 5c: Finalize permissions ───────────────────────────────────────
+    # ── Step 5c: Line patches ─────────────────────────────────────────────────
+    # comment_out specific lines in output files as configured in line_patches.
+    if _line_patches and not dry_run and os.path.isdir(args.output):
+        print(f"\n[5c/6] Applying {len(_line_patches)} line patch(es)...")
+        for patch in _line_patches:
+            rel_path     = patch.get('file', '')
+            match_str    = patch.get('match', '')
+            action       = patch.get('action', 'comment_out')
+            comment_char = patch.get('comment_char', '#')
+            reason       = patch.get('reason', '')
+            if not rel_path or not match_str:
+                print(f"  ! line_patch_invalid   (missing file or match field)")
+                continue
+            target = os.path.join(args.output, rel_path)
+            if not os.path.isfile(target):
+                print(f"  ! line_patch_missing   {rel_path}")
+                continue
+            lines = open(target, 'r', errors='replace').readlines()
+            patched = []
+            count = 0
+            for line in lines:
+                if action == 'comment_out' and match_str in line and not line.lstrip().startswith(comment_char):
+                    patched.append(f"{comment_char} [converter] {line.rstrip()}\n")
+                    count += 1
+                else:
+                    patched.append(line)
+            if count:
+                os.chmod(target, os.stat(target).st_mode | stat.S_IWUSR)
+                open(target, 'w').writelines(patched)
+                print(f"  ✓ line_patch_applied   {rel_path} ({count} line(s) commented)")
+                if reason:
+                    print(f"      ↳ reason: {reason}")
+            else:
+                print(f"  ~ line_patch_no_match  {rel_path} (pattern not found — already patched?)")
+
+    # ── Step 5d: Finalize permissions ───────────────────────────────────────
     if not dry_run and os.path.isdir(args.output):
         output_group = cfg.get('output_group', 'soc')
         _dereference_file_symlinks(args.output)

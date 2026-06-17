@@ -54,6 +54,24 @@ merge_hints: |
 # paths.  Applied after all ADDED/MODIFIED/REMOVED steps, so they always win.
 file_overrides: {}
 
+# ── Line patches ─────────────────────────────────────────────────────────────
+# Comment out (or otherwise patch) specific lines in output model files after
+# all other steps.  Applied in apply mode only (not dry-run).
+#
+# Fields:
+#   file         relative path inside the output model
+#   match        substring that identifies the line(s) to patch (exact substring match)
+#   action       comment_out  (only action currently supported)
+#   comment_char character(s) to prefix the commented line  [default: #]
+#   reason       human-readable note logged during conversion
+#
+line_patches:
+  - file:         cfg/trex/emulation_TREX.pm
+    match:        "unshift(@{$main::Test_Info{'Model_Tool_Args'}}, '-plugin', $ENV{WORKAREA} . '/verif/emu/plugins/emurun/zebu_libstdc_override.pm');"
+    action:       comment_out
+    comment_char: "#"
+    reason:       "zebu_libstdc_override plugin causes collisions in Simics7 environment"
+
 # ── Path remaps ──────────────────────────────────────────────────────────────
 # Remap analysis entry paths to project-specific output destinations.
 # Applies to ADDED, MODIFIED, and REMOVED entries.
