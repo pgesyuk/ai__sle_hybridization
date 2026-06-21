@@ -141,6 +141,72 @@ file_overrides:
   src/val/emu/pchlp/PCD_WORKAREA/dfx/dffm/soc/pchlp/output/pchlp/src/rtl/dffm.f.ref: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/pchlp/PCD_WORKAREA/dfx/dffm/soc/pchlp/output/pchlp/src/rtl/dffm.f.ref
   src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/src/val/emu/testbench/rtl/cdie_emu_tlms.sv.ref: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/src/val/emu/testbench/rtl/cdie_emu_tlms.sv.ref
   src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/subip/hip/cdie_p1278_core/target/core/dft_insert/client_1278p6/core_client/rtl_out/core_client.v.ref: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/subip/hip/cdie_p1278_core/target/core/dft_insert/client_1278p6/core_client/rtl_out/core_client.v.ref
+  # ── Overrides from model_09 diff analysis ────────────────────────────────
+  # Category A: converter left as SLE but REF has newer content
+  # Category B: 3-way merge produced wrong output; REF==SLE (keep SLE content)
+  # Category C: 3-way merge + other factors; REF has distinct correct content
+  flows/pydoh/tool.cth: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/flows/pydoh/tool.cth
+  reglist/common/emu/common_defaults_zse.list: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/reglist/common/emu/common_defaults_zse.list
+  reglist/nvlsi7_n2p/emu/doa_pkg_chp_model_p2e4_fast_zse5.list: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/reglist/nvlsi7_n2p/emu/doa_pkg_chp_model_p2e4_fast_zse5.list
+  src/val/emu/build_cfg/probes_pkg/cdie_hsle.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/build_cfg/probes_pkg/cdie_hsle.py
+  src/val/emu/pchlp/PCD_WORKAREA/emu/pchlp/pcd_run_dir/run_files/pcd_py_files/pcd_main.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/pchlp/PCD_WORKAREA/emu/pchlp/pcd_run_dir/run_files/pcd_py_files/pcd_main.py
+  src/val/emu/pchlp/PCD_WORKAREA/emu/pchlp/pcd_tb/f_files/emu.f: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/pchlp/PCD_WORKAREA/emu/pchlp/pcd_tb/f_files/emu.f
+  src/val/emu/pchlp/PCD_WORKAREA/subsystems/dfx/filelists/val/rtl_opts.f: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/pchlp/PCD_WORKAREA/subsystems/dfx/filelists/val/rtl_opts.f
+  src/val/emu/pchlp/PCD_WORKAREA/verif/emu/PCD_ZSE4_UPF/Makefile.cfg: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/pchlp/PCD_WORKAREA/verif/emu/PCD_ZSE4_UPF/Makefile.cfg
+  src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/src/val/emu/testbench/rtl/cdie_emu_tb.sv: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/src/val/emu/testbench/rtl/cdie_emu_tb.sv
+  src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/src/val/emu/testbench/rtl/cdie_pwr_jem_tracker.sv: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/src/val/emu/testbench/rtl/cdie_pwr_jem_tracker.sv
+  src/val/emu/rtlchanges/soc/nvlsi7_n2p/hub/src/val/emu/testbench/rtl/hub_emu_tb.sv: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/rtlchanges/soc/nvlsi7_n2p/hub/src/val/emu/testbench/rtl/hub_emu_tb.sv
+  src/val/emu/testbench/py_lib/PkgTlsTb/PkgTbTop.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/PkgTlsTb/PkgTbTop.py
+  src/val/emu/testbench/py_lib/PkgTlsTb/Reset/ResetConfig.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/PkgTlsTb/Reset/ResetConfig.py
+  src/val/emu/testbench/py_lib/PkgTlsTb/Reset/ResetManager.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/PkgTlsTb/Reset/ResetManager.py
+  src/val/emu/testbench/py_lib/PkgTlsTb/Xtors/Clocking/Clocking.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/PkgTlsTb/Xtors/Clocking/Clocking.py
+  src/val/emu/testbench/py_lib/PkgTlsTb/Xtors/DirectWires/direct_wires.config.xml: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/PkgTlsTb/Xtors/DirectWires/direct_wires.config.xml
+  src/val/emu/testbench/py_lib/PkgTlsTb/Xtors/IosfSb/IosfSbXtor.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/PkgTlsTb/Xtors/IosfSb/IosfSbXtor.py
+  src/val/emu/testbench/py_lib/PkgTlsTb/Xtors/XtorManager.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/PkgTlsTb/Xtors/XtorManager.py
+  src/val/emu/testbench/py_lib/disable_stub_core_idi_xtors.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/disable_stub_core_idi_xtors.simics
+  src/val/emu/testbench/py_lib/hsle_core_files/bios_asserts.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/hsle_core_files/bios_asserts.simics
+  src/val/emu/testbench/py_lib/hsle_core_files/config/hybrid_cdie0p4e8_config.yml: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/hsle_core_files/config/hybrid_cdie0p4e8_config.yml
+  src/val/emu/testbench/py_lib/hsle_core_files/debug.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/hsle_core_files/debug.simics
+  src/val/emu/testbench/py_lib/hsle_core_files/debug_logs.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/hsle_core_files/debug_logs.simics
+  src/val/emu/testbench/py_lib/hsle_core_files/hsle_target_setup.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/hsle_core_files/hsle_target_setup.simics
+  src/val/emu/testbench/py_lib/hsle_core_files/hybrid_core.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/hsle_core_files/hybrid_core.simics
+  src/val/emu/testbench/py_lib/hsle_core_files/hybrid_core_init.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/hsle_core_files/hybrid_core_init.py
+  src/val/emu/testbench/py_lib/hsle_core_files/hybrid_mux.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/hsle_core_files/hybrid_mux.py
+  src/val/emu/testbench/py_lib/hsle_core_files/hybrid_xtors_bypass_x86.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/hsle_core_files/hybrid_xtors_bypass_x86.py
+  src/val/emu/testbench/py_lib/hsle_core_files/mappings/hybrid_48.smart.switches.os-min.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/hsle_core_files/mappings/hybrid_48.smart.switches.os-min.simics
+  src/val/emu/testbench/py_lib/hsle_core_files/mappings/hybrid_null.smart.switches.os-min.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/hsle_core_files/mappings/hybrid_null.smart.switches.os-min.simics
+  src/val/emu/testbench/py_lib/hsle_core_files/remap_pci.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/hsle_core_files/remap_pci.py
+  src/val/emu/testbench/py_lib/hsle_core_files/target_setup.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/hsle_core_files/target_setup.simics
+  src/val/emu/testbench/py_lib/init.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/init.simics
+  src/val/emu/testbench/py_lib/init_before_connect.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/init_before_connect.py
+  src/val/emu/testbench/py_lib/iosf_sb_xtors_configuration_workaround.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/iosf_sb_xtors_configuration_workaround.simics
+  src/val/emu/testbench/py_lib_overrides/HubTlsTb/Reset/ResetConfig.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib_overrides/HubTlsTb/Reset/ResetConfig.py
+  src/val/emu/testbench/py_lib_overrides/HubTlsTb/Reset/ResetManager.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib_overrides/HubTlsTb/Reset/ResetManager.py
+  src/val/emu/testbench/py_lib_overrides/HubTlsTb/TB/TBManager.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib_overrides/HubTlsTb/TB/TBManager.py
+  src/val/emu/testbench/py_lib_overrides/HubTlsTb/Xtors/Ddr/LpddrXtor.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib_overrides/HubTlsTb/Xtors/Ddr/LpddrXtor.py
+  src/val/emu/testbench/py_lib_overrides/HubTlsTb/Xtors/SystemMemory/SystemMemory.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib_overrides/HubTlsTb/Xtors/SystemMemory/SystemMemory.py
+  src/val/emu/testbench/py_lib_overrides/HubTlsTb/Xtors/XtorManager.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib_overrides/HubTlsTb/Xtors/XtorManager.py
+  src/val/emu/testbench/py_lib_overrides/cdie_n2p/Cdie0TlsTb/Reset/ResetConfig.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib_overrides/cdie_n2p/Cdie0TlsTb/Reset/ResetConfig.py
+  src/val/emu/testbench/py_lib_overrides/cdie_n2p/Cdie0TlsTb/Reset/ResetManager.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib_overrides/cdie_n2p/Cdie0TlsTb/Reset/ResetManager.py
+  src/val/emu/testbench/py_lib_overrides/cdie_n2p/Cdie0TlsTb/TB/DutConfig.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib_overrides/cdie_n2p/Cdie0TlsTb/TB/DutConfig.py
+  src/val/emu/testbench/py_lib_overrides/cdie_n2p/Cdie0TlsTb/TB/TBManager.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib_overrides/cdie_n2p/Cdie0TlsTb/TB/TBManager.py
+  src/val/emu/testbench/py_lib_overrides/cdie_n2p/Cdie0TlsTb/Xtors/EmuPowerMgmt/PowerRailBfm.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib_overrides/cdie_n2p/Cdie0TlsTb/Xtors/EmuPowerMgmt/PowerRailBfm.py
+  src/val/emu/testbench/py_lib_overrides/cdie_n2p/Cdie0TlsTb/Xtors/Idi/IdiXtor.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib_overrides/cdie_n2p/Cdie0TlsTb/Xtors/Idi/IdiXtor.py
+  src/val/emu/testbench/py_lib_overrides/cdie_n2p/Cdie0TlsTb/Xtors/XtorManager.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib_overrides/cdie_n2p/Cdie0TlsTb/Xtors/XtorManager.py
+  src/val/emu/testbench/py_lib_overrides/cdie_p1278/Cdie0TlsTb/Reset/ResetCycle0.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib_overrides/cdie_p1278/Cdie0TlsTb/Reset/ResetCycle0.py
+  src/val/emu/testbench/py_lib_overrides/cdie_p1278/Cdie0TlsTb/TB/DutConfig.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib_overrides/cdie_p1278/Cdie0TlsTb/TB/DutConfig.py
+  src/val/emu/testbench/py_lib_overrides/cdie_p1278/Cdie0TlsTb/Xtors/EmuPowerMgmt/PowerRailBfm.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib_overrides/cdie_p1278/Cdie0TlsTb/Xtors/EmuPowerMgmt/PowerRailBfm.py
+  src/val/emu/testbench/spark/args.yml: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/spark/args.yml
+  src/val/emu/testbench/spark/sle.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/spark/sle.simics
+  src/val/emu/testbench/tool_overrides/pydoh_nvl/25.02.001.pkg_patch_ax/Models/Cdie/CdieStubbedCoreResponse.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/tool_overrides/pydoh_nvl/25.02.001.pkg_patch_ax/Models/Cdie/CdieStubbedCoreResponse.py
+  src/val/emu/testbench/tool_overrides/pydoh_nvl/25.02.001.pkg_patch_ax/Models/Pkg/PydohMain.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/tool_overrides/pydoh_nvl/25.02.001.pkg_patch_ax/Models/Pkg/PydohMain.py
+  src/val/emu/tests/sle_workarounds/sle_verify_trackers.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/tests/sle_workarounds/sle_verify_trackers.py
+  tool.cth: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/tool.cth
+  verif/emu/buildit/EmuGen.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/verif/emu/buildit/EmuGen.py
+  verif/emu/rtl_cfg/PKG_IP_CHANGES.cfg: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/verif/emu/rtl_cfg/PKG_IP_CHANGES.cfg
+  verif/emu/rtl_cfg/global_emu_common_elab_opts.f: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/verif/emu/rtl_cfg/global_emu_common_elab_opts.f
+  verif/emu/zebu/Makefile: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/verif/emu/zebu/Makefile
+  verif/emu/zebu/Makefile.cfg: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/verif/emu/zebu/Makefile.cfg
 
 # ── Line patches ─────────────────────────────────────────────────────────────
 # Comment out (or otherwise patch) specific lines in output model files after
@@ -183,21 +249,16 @@ path_remaps:
 #   substitutions  list of {match, replace} pairs (plain string replacement)
 #   reason         human-readable note logged during conversion
 #
-content_patches:
-  # NVL-AX is single-die n2p (cdie0 only).  NVL-S ADDED/MODIFIED files that
-  # come from the NVL-S analysis reference cdie1 in their content; replace
-  # everywhere under src/val/emu/ so RTL, Python, TCL and config files are
-  # all consistent with the NVL-AX die topology.
-  - path_pattern: "src/val/emu/"
-    substitutions:
-      - match:   "cdie1"
-        replace: "cdie0"
-      # After cdie1→cdie0 runs, all cdie?pkg refs are cdie0pkg.
-      # NVL-AX n2p has a single die named cdiepkg (not cdie0pkg/cdie1pkg).
-      # e.g. tb_top.pkg.cdie0pkg.cdie... → tb_top.pkg.cdiepkg.cdie...
-      - match:   "cdie0pkg"
-        replace: "cdiepkg"
-    reason: "NVL-AX is n2p single-die — replace cdie1→cdie0 and cdie0pkg→cdiepkg in all emu val files"
+# content_patches:
+#   The cdie1→cdie0 bulk substitution has been REMOVED.  In the reference model
+#   (semi_ai__rtl_core_pm_01__co) the engineer kept the SLE versions of all
+#   testbench, firmware, and script files — none of those should have cdie1
+#   replaced with cdie0 globally.  Legitimate per-file cdie1→cdie0 changes are
+#   handled via file_overrides above.
+#
+#   Do NOT re-enable a broad src/val/emu/ substitution: it corrupts firmware
+#   text disassemblies, Python cdie1_context attributes, CDIE1_OVERRIDE module
+#   names, and dozens of other files that must retain cdie1 semantics.
 
 # ── Output ───────────────────────────────────────────────────────────────────
 # Stem name for the report files written into the output directory.
