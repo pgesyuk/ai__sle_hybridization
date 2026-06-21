@@ -1,6 +1,18 @@
 # HSLE Converter — config.yaml (NVLax example)
 # All settings can be overridden via CLI flags.
 
+# ── Default analysis and donor paths ─────────────────────────────────────────
+# analysis_path: default analysis.md used when --analysis is not provided on CLI.
+# This must point to the NVL-AX-specific analysis (26ww12a SLE → 26ww12a HSLE)
+# so that all NVL-AX HSLE-specific files (reglist/nvlsi7_n2p/emu/hsle/, etc.)
+# are correctly ADDED during conversion.
+#
+# donor_path: default donor HSLE model used when --donor is not provided on CLI.
+# Should be the NVL-AX reference HSLE model (same one used in the analysis).
+#
+analysis_path: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/hybridization/analysis_nvlax/analysis_heuristic.md
+donor_path: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/hybridization/src_donor_models/sle_emu-nvlax-a0-26ww12a_hsle_v07_cores__msr_co
+
 # ── ADDED file conflict policy ───────────────────────────────────────────────
 # Controls what happens when an ADDED file's relative path already exists in
 # the new SLE model being converted.

@@ -27,8 +27,14 @@ from .analysis_parser import FileEntry
 
 
 # Top-level directories in a model that are compilation outputs and must never
-# be copied into the converted HSLE model.
-_COMPILE_OUTPUT_DIRS = frozenset({'output', '.grdlbuild_logs', 'soc', 'subip', 'codegen'})
+# be copied into the converted HSLE model.  These names are matched against
+# directory names at any depth by shutil.ignore_patterns, so 'GATEKEEPER'
+# excludes both the top-level dir and any nested dir with the same name.
+_COMPILE_OUTPUT_DIRS = frozenset({
+    'output', '.grdlbuild_logs', 'soc', 'subip', 'codegen',
+    'GATEKEEPER',   # GK4 build/release infrastructure
+    '__pycache__',  # Python bytecode cache
+})
 
 # Individual files that are always regenerated during model compilation and
 # must never be carried forward into the output HSLE model.

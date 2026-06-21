@@ -114,7 +114,8 @@ def run() -> None:
         epilog=__doc__,
     )
     parser.add_argument('--sle-model',  required=True, help='New SLE model directory to convert')
-    parser.add_argument('--analysis',   required=True, help='analysis.md from the diff agent')
+    parser.add_argument('--analysis',   help='analysis.md from the diff agent '
+                                            '(overrides analysis_path in config.yaml)')
     parser.add_argument('--output',     required=True, help='Destination path for the HSLE model')
     parser.add_argument('--config',                    help='Optional config.yaml')
     parser.add_argument('--mode',       choices=['dry-run', 'apply'], default='dry-run',
@@ -126,7 +127,8 @@ def run() -> None:
     parser.add_argument('--ref-sle',    help='Override reference SLE path extracted from analysis.md')
     parser.add_argument('--ref-hsle',   help='Override reference HSLE path extracted from analysis.md')
     parser.add_argument('--donor',      help='Donor HSLE model (previous project or version) — '
-                                             'provides up-to-date HSLE files and LLM context')
+                                             'provides up-to-date HSLE files and LLM context '
+                                             '(overrides donor_path in config.yaml)')
     parser.add_argument('--scope',      metavar='TEXT',
                         help='Only apply changes whose path contains TEXT (case-insensitive). '
                              'E.g. --scope cdie0 restricts all ADDED/MODIFIED/REMOVED '
@@ -135,6 +137,17 @@ def run() -> None:
 
     cfg      = _load_config(args.config)
     dry_run  = args.mode == 'dry-run'
+
+    # Resolve analysis path: CLI arg → config analysis_path → error
+    if not args.analysis:
+        args.analysis = cfg.get('analysis_path', '')
+    if not args.analysis:
+        print("  ERROR: --analysis not provided and no analysis_path in config.yaml")
+        sys.exit(1)
+
+    # Resolve donor path: CLI arg → config donor_path
+    if not args.donor:
+        args.donor = cfg.get('donor_path', '') or None
     patch_mode          = args.patch_mode or cfg.get('patch_mode', 'auto')
     conflict_policy     = cfg.get('added_conflict_policy', 'manual')
     removed_safety      = cfg.get('removed_safety_check', True)
@@ -171,11 +184,24 @@ def run() -> None:
     # These files are regenerated during compilation and must not be
     # overwritten, deleted, or merged.
     _AUTOGEN_PREFIXES = ('filelists/', 'output/', '.grdlbuild_logs/', 'soc/', 'subip/', 'src/codegen/')
+    # GK4 release-process artifacts that live in released HSLE donor models
+    # but must not be propagated to freshly-converted models.
+    _GK4_EXACT = frozenset({
+        'RELEASE_NOTES', 'RELEASE_NOTES_POST', 'Release_logs',
+        'regression', '.clone.perf.csv', 'MERGE_TODO.md',
+    })
     def _is_autogen(rel_path: str) -> bool:
         if any(rel_path == p.rstrip('/') or rel_path.startswith(p)
                for p in _AUTOGEN_PREFIXES):
             return True
         if 'PCD_WORKAREA/' in rel_path and 'pchlp/output/' in rel_path:
+            return True
+        # GK4 release artifacts: GATEKEEPER/ directory and top-level log files
+        if rel_path == 'GATEKEEPER' or rel_path.startswith('GATEKEEPER/'):
+            return True
+        if rel_path.startswith('log_to_ibi.'):
+            return True
+        if rel_path in _GK4_EXACT:
             return True
         return False
 
