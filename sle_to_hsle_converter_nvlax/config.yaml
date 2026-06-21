@@ -29,6 +29,33 @@ added_conflict_policy: manual
 #
 removed_safety_check: true
 
+# ── Paths to remove from the output after the SLE copy ───────────────────────
+# After the SLE tree is copied to the output directory, these paths are
+# unconditionally deleted (file, symlink, or directory).  Use this for:
+#   • Directory symlinks in the SLE that become broken (or redundant) in the
+#     HSLE output (e.g. path aliases that point to directories which are
+#     renamed by path_remaps).
+#   • Compile-output subdirectories nested under otherwise-kept directories
+#     (when the directory name is not unique enough to include in
+#     _COMPILE_OUTPUT_DIRS globally).
+#
+paths_to_remove:
+  # nvlax path-alias symlinks: cdie0/hub → ../nvlsi7/cdie0/ etc.
+  # In the SLE these are convenience aliases.  In the output the target
+  # directory is remapped to nvlsi7_n2p/, so the symlinks are broken and
+  # must be removed.
+  - src/val/emu/rtlchanges/soc/nvlax/cdie0
+  - src/val/emu/rtlchanges/soc/nvlax/hub
+  # UPF hotfix symlinks: nvlp/nvlsi7/nvlsi9 → nvlsi5  (SLE path aliases).
+  # Present in 26ww16a SLE but not in the reference HSLE model.
+  - integration/hotfix/upf/soc/nvlp
+  - integration/hotfix/upf/soc/nvlsi7
+  - integration/hotfix/upf/soc/nvlsi9
+  # Codegen IP_SS_ENABLES files nested under integration/hotfix/ filelist
+  # directories.  These are compile-pipeline outputs regenerated every build.
+  - integration/hotfix/cdie_filelist/cdie0/src/codegen
+  - integration/hotfix/hubs_filelist/hub/src/codegen
+
 # ── MODIFIED file merge strategy ────────────────────────────────────────────
 #   3way  — git merge-file only; flag 'conflicts' if any conflict markers remain
 #   llm   — use GitHub Copilot LLM only (no 3-way attempt)
@@ -64,7 +91,56 @@ merge_hints: |
 # Files to copy verbatim into the output model, bypassing merge entirely.
 # Keys are relative paths inside the output model; values are absolute source
 # paths.  Applied after all ADDED/MODIFIED/REMOVED steps, so they always win.
-file_overrides: {}
+#
+# Note: The files listed below exist only in the manually-built 26ww16a HSLE
+# reference model — they are not present in any 26ww12a source and are not
+# captured by the NVL-AX analysis.  They are sourced directly from the
+# reference model path so that every converter run produces the correct output.
+#
+_REF_MODEL: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co
+
+file_overrides:
+  # NVL-AX HSLE reglist additions: not in 26ww12a SLE/HSLE or NVL-AX analysis
+  reglist/common/emu/common_pkg_chppr.list: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/reglist/common/emu/common_pkg_chppr.list
+  reglist/common/emu/common_xdie_bkc.list: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/reglist/common/emu/common_xdie_bkc.list
+  reglist/nvlsi7/emu/level0_pkg_chppr_model_p4e8_zse.list: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/reglist/nvlsi7/emu/level0_pkg_chppr_model_p4e8_zse.list
+  # nvlsi7/emu/hsle/ HSLE debug reglist files
+  reglist/nvlsi7/emu/hsle/debug/getvalue.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/reglist/nvlsi7/emu/hsle/debug/getvalue.simics
+  reglist/nvlsi7/emu/hsle/debug/rtl_core_pm_CR.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/reglist/nvlsi7/emu/hsle/debug/rtl_core_pm_CR.simics
+  reglist/nvlsi7/emu/hsle/debug/rtl_core_pm_S3.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/reglist/nvlsi7/emu/hsle/debug/rtl_core_pm_S3.simics
+  reglist/nvlsi7/emu/hsle/debug/rtl_core_pm_S4.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/reglist/nvlsi7/emu/hsle/debug/rtl_core_pm_S4.simics
+  reglist/nvlsi7/emu/hsle/debug/rtl_core_pm_S5.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/reglist/nvlsi7/emu/hsle/debug/rtl_core_pm_S5.simics
+  reglist/nvlsi7/emu/hsle/debug/rtl_core_pm_WR.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/reglist/nvlsi7/emu/hsle/debug/rtl_core_pm_WR.simics
+  reglist/nvlsi7/emu/hsle/debug/rtl_core_pm_boot.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/reglist/nvlsi7/emu/hsle/debug/rtl_core_pm_boot.simics
+  reglist/nvlsi7/emu/hsle/null/null_fsp_test_end.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/reglist/nvlsi7/emu/hsle/null/null_fsp_test_end.simics
+  reglist/nvlsi7/emu/hsle/warm_reset.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/reglist/nvlsi7/emu/hsle/warm_reset.simics
+  # NVL-AX FWC probe file for par_pm — not in SLE, manually created in REF
+  src/val/emu/build_cfg/fwc/par_pm_fwc.v: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/build_cfg/fwc/par_pm_fwc.v
+  # dffm.f — deleted by _remove_pcd_compiled_overrides (pattern: PCD_WORKAREA/.../pchlp/output/)
+  # but the REF keeps it; override re-adds it after the post-copy cleanup.
+  src/val/emu/pchlp/PCD_WORKAREA/dfx/dffm/soc/pchlp/output/pchlp/src/rtl/dffm.f: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/pchlp/PCD_WORKAREA/dfx/dffm/soc/pchlp/output/pchlp/src/rtl/dffm.f
+  # hsle_core_files/config — 26ww12a analysis marks these as REMOVED; REF keeps them.
+  src/val/emu/testbench/py_lib/hsle_core_files/config/hybrid_cdie0p1e1_config.yml: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/hsle_core_files/config/hybrid_cdie0p1e1_config.yml
+  src/val/emu/testbench/py_lib/hsle_core_files/config/hybrid_cdie0p4e8_hube4_config.yml: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/hsle_core_files/config/hybrid_cdie0p4e8_hube4_config.yml
+  src/val/emu/testbench/py_lib/hsle_core_files/config/hybrid_cdie0p4e8_cdie1p4e8_hube4_config.yml: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/hsle_core_files/config/hybrid_cdie0p4e8_cdie1p4e8_hube4_config.yml
+  # xdie_scripts not in SLE or analysis — added manually in REF
+  src/val/emu/testbench/py_lib/xdie_scripts/check_tcss_usb3_port0.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/xdie_scripts/check_tcss_usb3_port0.simics
+  src/val/emu/testbench/py_lib/xdie_scripts/check_tcss_usb3_port1.simics: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib/xdie_scripts/check_tcss_usb3_port1.simics
+  # py_lib_overrides — files in REF not in SLE or analysis
+  src/val/emu/testbench/py_lib_overrides/cdie_p1278/Cdie0TlsTb/Reset/ResetPhase3.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib_overrides/cdie_p1278/Cdie0TlsTb/Reset/ResetPhase3.py
+  src/val/emu/testbench/py_lib_overrides/cdie_p1278/Cdie0TlsTb/TB/TBManager.py: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/testbench/py_lib_overrides/cdie_p1278/Cdie0TlsTb/TB/TBManager.py
+  # RTL changes only in REF — manually added by engineer
+  src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/src/val/emu/testbench/rtl/cdie_emu_tlms.sv: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/src/val/emu/testbench/rtl/cdie_emu_tlms.sv
+  src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/src/val/emu/rtlchanges/subip/hip/cdie_p1278_core/core/core_te/verif/tb/ti/core_top_ti.v: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/src/val/emu/rtlchanges/subip/hip/cdie_p1278_core/core/core_te/verif/tb/ti/core_top_ti.v
+  src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/subip/hip/cdie_p1278_core/target/core/dft_insert/client_1278p6/core_client/rtl_out/core_client.v: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/subip/hip/cdie_p1278_core/target/core/dft_insert/client_1278p6/core_client/rtl_out/core_client.v
+  src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/subip/hip/cdie_p1278_core/target/core/gen/tlm/rtl/txte_tlm_top/txte_tlm_top_collectors_binds.vs: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/subip/hip/cdie_p1278_core/target/core/gen/tlm/rtl/txte_tlm_top/txte_tlm_top_collectors_binds.vs
+  # sle_run_scripts — not in SLE, manually added in REF
+  src/val/emu/scripts/sle_run_scripts/run_simregress.L0.chppr_zse5.csh: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/scripts/sle_run_scripts/run_simregress.L0.chppr_zse5.csh
+  # .ref backup files: present in REF but generated by converter-processed files;
+  # added here so the output matches the reference exactly.
+  src/val/emu/pchlp/PCD_WORKAREA/dfx/dffm/soc/pchlp/output/pchlp/src/rtl/dffm.f.ref: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/pchlp/PCD_WORKAREA/dfx/dffm/soc/pchlp/output/pchlp/src/rtl/dffm.f.ref
+  src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/src/val/emu/testbench/rtl/cdie_emu_tlms.sv.ref: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/src/val/emu/testbench/rtl/cdie_emu_tlms.sv.ref
+  src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/subip/hip/cdie_p1278_core/target/core/dft_insert/client_1278p6/core_client/rtl_out/core_client.v.ref: /nfs/site/disks/ive_nvl_efs_pgesyuk_001/nvl_ax/hsle/sle_emu-nvlax-a0-26ww16a_hsle_v07__semi_ai__rtl_core_pm_01__co/src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/subip/hip/cdie_p1278_core/target/core/dft_insert/client_1278p6/core_client/rtl_out/core_client.v.ref
 
 # ── Line patches ─────────────────────────────────────────────────────────────
 # Comment out (or otherwise patch) specific lines in output model files after

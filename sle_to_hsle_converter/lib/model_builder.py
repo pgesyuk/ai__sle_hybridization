@@ -31,9 +31,16 @@ from .analysis_parser import FileEntry
 # directory names at any depth by shutil.ignore_patterns, so 'GATEKEEPER'
 # excludes both the top-level dir and any nested dir with the same name.
 _COMPILE_OUTPUT_DIRS = frozenset({
-    'output', '.grdlbuild_logs', 'soc', 'subip', 'codegen',
     'GATEKEEPER',   # GK4 build/release infrastructure
     '__pycache__',  # Python bytecode cache
+    '.grdlbuild_logs',
+    # NOTE: 'output', 'codegen', 'soc', 'subip', 'pcd_run_dir' intentionally absent.
+    # shutil.ignore_patterns() matches against directory NAMES at ANY depth.
+    # 'output' and 'codegen' appear inside legitimate source trees
+    # (e.g. src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/subip/.../output/,
+    #  hub_idi_bridge/src/codegen/), so excluding by name would silently drop
+    # real source files.  Top-level soc/subip/output compile artifacts are
+    # handled by _AUTOGEN_PREFIXES in convert.py (analysis entries only).
 })
 
 # Individual files that are always regenerated during model compilation and

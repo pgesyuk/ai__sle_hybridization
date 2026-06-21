@@ -50,7 +50,10 @@ from lib.reporter         import write_report
 # --------------------------------------------------------------------------- #
 
 def _load_config(path: str | None) -> dict:
-    if not path or not os.path.exists(path):
+    if not path:
+        # Auto-detect config.yaml next to this script
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.yaml')
+    if not os.path.exists(path):
         return {}
     with open(path) as f:
         return yaml.safe_load(f) or {}
@@ -183,7 +186,25 @@ def run() -> None:
     # Auto-generated directories/paths: never touched by the converter.
     # These files are regenerated during compilation and must not be
     # overwritten, deleted, or merged.
-    _AUTOGEN_PREFIXES = ('filelists/', 'output/', '.grdlbuild_logs/', 'soc/', 'subip/', 'src/codegen/')
+    _AUTOGEN_PREFIXES = ('filelists/', 'output/', '.grdlbuild_logs/', 'soc/', 'subip/', 'src/codegen/',
+                         # HSLE-specific TLSpyLib variant — present in 26ww12a HSLE donor but not
+                         # in the 26ww16a SLE or REF; DONOR-only addition not wanted in output.
+                         'src/val/emu/testbench/tool_overrides/tlspylib/NVL_24.03.013_sle_hsle/',
+                         # Hybrid MUX transactor RTL — added in 26ww12a HSLE for hybrid-die packages
+                         # but obsolete in 26ww16a single-die NVL-AX; REF does not include them.
+                         'src/val/emu/rtlchanges/soc/nvlsi7_n2p/cdie0/src/val/emu/testbench/rtl/cdie_emu_hybrid_mux_xtor.',
+                         'src/val/emu/rtlchanges/soc/nvlsi7_n2p/hub/src/val/emu/testbench/rtl/hub_emu_hybrid_mux_xtor.',
+                         # Stub-core IDI disable scripts with die-index suffixes — added in 26ww12a
+                         # HSLE donor but not present in 26ww16a SLE or REF.
+                         'src/val/emu/testbench/py_lib/disable_stub_core_idi_xtors.01.simics',
+                         'src/val/emu/testbench/py_lib/disable_stub_core_idi_xtors.0123.simics',
+                         'src/val/emu/testbench/py_lib/disable_stub_core_idi_xtors.23.simics',
+                         # read_hybrid_msrs.simics — added in 26ww12a HSLE but not in REF.
+                         'src/val/emu/testbench/py_lib/hsle_core_files/read_hybrid_msrs.simics',
+                         # nvlax_efficiency_boost.simics under sle_workarounds — added in 26ww12a
+                         # HSLE under tests/sle_workarounds/ but REF only has it under py_lib/.
+                         'src/val/emu/tests/sle_workarounds/nvlax_efficiency_boost.simics',
+                         )
     # GK4 release-process artifacts that live in released HSLE donor models
     # but must not be propagated to freshly-converted models.
     _GK4_EXACT = frozenset({
@@ -258,6 +279,9 @@ def run() -> None:
 
     results = []
 
+    # ── Step 1b: paths_to_remove (post-SLE-copy cleanup) ────────────────────
+    _paths_to_remove = cfg.get('paths_to_remove', [])
+
     # ── Step 2: Create output tree ──────────────────────────────────────────
     print("\n[2/6] Preparing output directory...")
     if os.path.exists(args.output):
@@ -274,6 +298,26 @@ def run() -> None:
     else:
         create_output(args.sle_model, args.output)
         print(f"  Copied: {args.sle_model} → {args.output}")
+
+    # ── Step 2b: Remove SLE-copy artifacts listed in paths_to_remove ────────
+    if _paths_to_remove and not dry_run and os.path.isdir(args.output):
+        removed_count = 0
+        for rel_path in _paths_to_remove:
+            target = os.path.join(args.output, rel_path)
+            if os.path.islink(target):
+                os.unlink(target)
+                removed_count += 1
+                print(f"  ✓ removed_symlink      {rel_path}")
+            elif os.path.isdir(target):
+                shutil.rmtree(target)
+                removed_count += 1
+                print(f"  ✓ removed_dir          {rel_path}")
+            elif os.path.isfile(target):
+                os.unlink(target)
+                removed_count += 1
+                print(f"  ✓ removed_file         {rel_path}")
+            else:
+                print(f"  ~ paths_to_remove_skip {rel_path} (not present in output)")
 
     # ── Step 3: Apply ADDED ─────────────────────────────────────────────────
     print(f"\n[3/6] Applying {len(added)} ADDED files...")
