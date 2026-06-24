@@ -45,7 +45,7 @@
 
 | Term | Description |
 |------|-------------|
-| **SLE** | Silicon-Level Emulation — all CPU cores run as RTL on the Zebu emulator. Full accuracy, slow boot. |
+| **SLE** | System-Level Emulation — CDie + PCD run as RTL on the Zebu emulator. Full accuracy, slow boot. |
 | **HSLE** | Hybrid SLE — most cores replaced by fast Simics VPs; one or more cores remain as (partial) RTL. |
 | **VP / Simics** | Virtual Platform — software-simulated CPU in Simics (fast, functional-only). |
 | **par_pm** | The **Power Management** RTL sub-block inside the core complex — **preserved** as real RTL in this model. |
