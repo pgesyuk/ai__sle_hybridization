@@ -393,60 +393,7 @@ Per-flow Simics debug scripts (activated from run-list or manually in Verdi):
 
 ---
 
-## 📂 9. Run-Time Reference Paths
 
-*From OneNote — actual regression run paths used for reference and debug*
-
-### NVL-SI7 (ZSE5 target, DDR5-3200)
-
-| PM Flow | Reference run path |
-|---------|-------------------|
-| Warm Reset | `ive_sle_zsc11_mohdisha/.../level1_pkg_chppr_model_p4e8_zse5_hsle_debug.list.10/nop_hlt_hsle_time0_rtl_corepm_WR_pefw_hub_atom_dis_ddr5_3200/` |
-| Cold Reset | `ive_sle_zsc11_mohdisha/.../level1_pkg_chppr_model_p4e8_zse5_hsle_debug.list.20/nop_hlt_hsle_time0_rtl_corepm_CR_pefw_hub_atom_dis_ddr5_3200/` |
-| S3 | `pch_nvl_emu_001/mohdisha/rtl_corepm/runs/nvlsi7/level2_pkg_chppr_model_p4e8_zse5_hsle.list.3/nop_hlt_hsle_time0_rtl_corepm_S3_pefw_hub_atom_dis_ddr5_3200/` |
-| S4 | `pch_nvl_emu_001/mohdisha/rtl_corepm/.../level2_...list.4/nop_hlt_hsle_time0_rtl_corepm_S4_pefw_hub_atom_dis_ddr5_3200/` |
-| S5 | `pch_nvl_emu_001/mohdisha/rtl_corepm/.../level2_...list.1/nop_hlt_hsle_time0_rtl_corepm_S5_pefw_hub_atom_dis_ddr5_3200/` |
-| PKG-C | `regression/nvlsi7/level3_pkg_chppr_model_p4e8_zse5_hsle.list.25/nop_hlt_hsle_time0_rtl_corepm_pkg_c_pefw_noIMR_minset_pefw_scale_90_hub_atom_dis_ddr5_3200/` |
-
-### NVL-P (LPDDR5-2666)
-
-| PM Flow | Reference run path |
-|---------|-------------------|
-| Warm Reset | `pch_nvl_efs_ankurag3/.../pkg-nvlpkg-a0-..._sle_hsle_Perf.1.rtlcorepm/regression/nvlp/level0_pkg_chpr_model_p4e8_hsle_minibios_wr.list.13/nop_hlt_pefw_uefi_hsle_time0_rtl_corepm_mobile_lpddr5_2666/results.log` |
-| Cold Reset | `pch_nvl_emu_001/mohdisha/rtl_corepm/runs/nvlp/resets/nvlp/level1_pkg_chpr_model_p4e8_hsle_minibios.list/nop_hlt_pefw_hsle_time0_rtl_corepm_CR_mobile_lpddr5_2666/logbook.log` ⚠️ *cold reset passed but failed in minibios* |
-| S3 | `pch_nvl_emu_001/mohdisha/rtl_corepm/runs/nvlp/resets/Sx/nvlp/.../nop_hlt_pefw_hsle_time0_rtl_corepm_S3_mobile_lpddr5_2666/results.log` |
-| S4 | `pch_nvl_emu_001/mohdisha/rtl_corepm/runs/nvlp/resets/Sx/nvlp/.../nop_hlt_pefw_hsle_time0_rtl_corepm_S4_mobile_lpddr5_2666/results.log` |
-| S5 | `pch_nvl_emu_001/mohdisha/rtl_corepm/runs/nvlp/resets/Sx/nvlp/.../nop_hlt_pefw_hsle_time0_rtl_corepm_S5_mobile_lpddr5_2666/results.log` |
-
----
-
-## ✅ 10. Results
-
-### Platform: PTL-P (Panther Lake) — Die S484
-
-| # | PM Flow | Status |
-|---|---------|--------|
-| 1 | Warm Reset | ✅ PASSED |
-| 2 | Cold Reset | ✅ PASSED |
-| 3 | S5 | ✅ PASSED |
-| 4 | S4 | ✅ PASSED |
-| 5 | S3 | ✅ PASSED |
-| 6 | PKG-C | ⚠️ Flow completed — MCA error observed after PKG-C exit |
-
-### Platform: NVL-S (Nova Lake S) — CHPPr Die
-
-| # | PM Flow | Status |
-|---|---------|--------|
-| 1 | Warm Reset | ✅ PASSED |
-| 2 | Cold Reset | ✅ PASSED |
-| 3 | S5 | ✅ PASSED |
-| 4 | S4 | ✅ PASSED |
-| 5 | S3 | ✅ PASSED |
-| 6 | PKG-C | 🔵 Bring-up in progress |
-
-> **Summary:** All S3/S4/S5 + warm/cold reset pass on both platforms.  
-> PKG-C is the remaining open item — PTL-P has a post-exit MCA; NVL-S still in bring-up.  
-> NVL-P cold reset passes the RTL CORE PM gate but fails later in minibios (separate issue).
 
 ---
 
@@ -553,20 +500,6 @@ reglist/common/emu/common_xdie_bkc.list
 
 ---
 
-## 🔑 14. Key Code Patterns
-
-| Pattern | Description |
-|---------|-------------|
-| **Comment-out dominant** | 32/65 modified files: SLE-only code commented (not deleted) — preserves context, easy to re-enable for debug |
-| **`hsle_rtl_core_pm` guards** | `hybrid_core_init.py`, `hybrid_mux.py` conditioned on this flag — safe to include in non-CORE-PM HSLE models |
-| **Import substitution** | TB files switch from `IdiXtor` (direct IDI) to `HybridMux`; `par_mlc`/`icore` TB references removed |
-| **IDI stub disable** | `disable_stub_core_idi_xtors.{01,23,0123}.simics` disable IDI xtors on Simics-stub cores |
-| **Topology in filenames** | `p4e8` = 4P+8E, `_hsle` = HSLE variant, `_null` = null FSP, `_trk` = tracker-enabled |
-| **Bind removal** | Bind statements to `par_mlc`/`icore` sub-modules removed from `core_top_ti.v`, tracker SVs |
-| **Force-wire files** | `par_pm_fwc.v` / `fwc_top.v` force internal `par_pm` signals needed by testbench |
-
----
-
 ## 🚀 15. Next Phase
 
 ### 15.1 ESR-Based Stimulus
@@ -591,20 +524,6 @@ flowchart LR
 
 ---
 
-## 🌐 16. Platform Coverage
-
-| Platform | Die | Core | CORE PM Status |
-|----------|-----|------|----------------|
-| **PTL-P** (Panther Lake) | S484 | Panther Cove | S3–S5+Reset ✅ · PKG-C ⚠️ MCA after exit |
-| **NVL-S** (Nova Lake S) | CHPPr | Panther Cove (NVL) | S3–S5+Reset ✅ · PKG-C 🔵 in progress |
-| **NVL-P** | — | Panther Cove | CR ✅ (minibios follow-up open) |
-| **NVL-AX A0** | — | PNC + Arctic Wolf | This model (`26ww16a`) |
-| **Razor Lake** | RZL-U/RZL | NVL/Griffin Cove/Golden Eagle | Planned |
-| **Harvey Lake** | — | Unified Core (P+E) | Planned |
-| **Titan Lake** | — | Copper Shark | Planned |
-
----
-
 ## 📊 17. Summary Table
 
 | Aspect | SLE | HSLE with RTL CORE PM |
@@ -624,21 +543,3 @@ flowchart LR
 
 ---
 
-## 📚 18. References
-
-| Resource | Link / Path |
-|----------|-------------|
-| CCP PM Integration | https://docs.intel.com/documents/pm_doc/src/nvl/ip%20integration/ccp/ccp_pm_integration.html |
-| Atom Decoder Ring | https://intelpedia.intel.com/Atom_Decoder_Ring |
-| Atom Core PM MicroArchitecture | https://docs.intel.com/documents/atom_core_pm/ATOM/MAS/PM_MicroArchitecture.html |
-| Aunit HAS | https://intel.sharepoint.com/:w:/r/sites/TheLions/GFC/_layouts/15/Doc.aspx?sourcedoc=%7B6A05D55B-DF9D-4B45-BA32-5CD47CADCC32%7D |
-| Simics VP CORE PMA solution (server team) | https://wiki.ith.intel.com/display/PPA/Simics+based+corePMA+solution |
-| ACODE tracker (CRBUS values) | Referenced in OneNote — see run paths in §9 |
-| Verdi RC files | `/nfs/site/disks/ive_sle_zsc11_mohdisha/my_vnc/verdi/` |
-| Diff analysis report | `Y:\hybridization\analysis_nvlax\analysis_heuristic.md` |
-| Conversion report | `Y:\hybridization\src_donor_models\sle_emu-nvlax-a0-26ww16a_co\conversion_report.md` |
-| Converter tool | `Y:\hybridization\sle_to_hsle_converter_nvlax\` |
-
----
-
-*v4 — 2026-06-24 · Sources: source-tree + "RTL CORE PMA" presentation (Ishaq, Mohd) + OneNote "RTL CORE_PM Intro" (Gesyuk, Pavel, 7 Sep 2025)*
