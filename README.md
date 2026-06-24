@@ -59,23 +59,7 @@
 | **IDI** | In-Die Interconnect — primary data/cache-coherency bus between core and uncore (hub). |
 | **CRBUS** | Control Ring Bus — bus used to inject ACODE stimulus into the RTL core's PM registers. |
 | **ACODE** | Architecture Code — the micro-operation sequence that drives PM state transitions via CRBUS. |
-| **PNC** | Panther Cove (a.k.a. Coyote Cove) — P-Core architecture used in NVL-AX. |
 | **MUX Xtor** | Hybrid MUX Transactor (`*_emu_hybrid_mux_xtor.sv`) — bridges IDI between RTL core and Simics stubs. |
-| **hsle_rtl_core_pm** | Compile-time guard symbol that enables RTL CORE PM mode in the HSLE build. |
-
-The model name decodes as:
-```
-sle_emu - nvlax - a0 - 26ww16a - hsle - v07 - semi_ai - rtl_core_pm_01 - co
-   │        │      │     │         │      │       │            │             └─ checkout
-   │        │      │     │         │      │       │            └─ 1st RTL CORE PM scenario
-   │        │      │     │         │      │       └─ semi-automated AI-assisted conversion
-   │        │      │     │         │      └─ hybridization recipe version 07
-   │        │      │     │         └─ Hybrid SLE
-   │        │      │     └─ WW16 2026 drop A
-   │        │      └─ A0 stepping
-   │        └─ Nova Lake AX die
-   └─ SLE emulation model
-```
 
 ---
 
